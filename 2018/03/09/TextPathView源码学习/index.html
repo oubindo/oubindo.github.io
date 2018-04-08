@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="Android,DeepLearning,and more">
+<meta name="description" content="TextPathView源码学习PathMeasurePathMeasure是Path的坐标计算器，可以获取Path上每一个构成点的坐标。初始化：1234PathMeasure pathMeasure = new PathMeasure();pathMeasure.setPath(path, true);// 或者使用有参构造法PathMeasure(Path path, boolean forc">
 <meta name="keywords" content="源码">
 <meta property="og:type" content="article">
 <meta property="og:title" content="TextPathView源码学习">
 <meta property="og:url" content="http://yoursite.com/2018/03/09/TextPathView源码学习/index.html">
 <meta property="og:site_name" content="oubindo的技术博客">
-<meta property="og:description" content="Android,DeepLearning,and more">
+<meta property="og:description" content="TextPathView源码学习PathMeasurePathMeasure是Path的坐标计算器，可以获取Path上每一个构成点的坐标。初始化：1234PathMeasure pathMeasure = new PathMeasure();pathMeasure.setPath(path, true);// 或者使用有参构造法PathMeasure(Path path, boolean forc">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-03-09T09:09:34.669Z">
+<meta property="og:updated_time" content="2018-03-14T15:19:18.920Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="TextPathView源码学习">
-<meta name="twitter:description" content="Android,DeepLearning,and more">
+<meta name="twitter:description" content="TextPathView源码学习PathMeasurePathMeasure是Path的坐标计算器，可以获取Path上每一个构成点的坐标。初始化：1234PathMeasure pathMeasure = new PathMeasure();pathMeasure.setPath(path, true);// 或者使用有参构造法PathMeasure(Path path, boolean forc">
 
 
 
@@ -322,7 +322,19 @@
       
 
       
-        
+        <h1 id="TextPathView源码学习"><a href="#TextPathView源码学习" class="headerlink" title="TextPathView源码学习"></a>TextPathView源码学习</h1><h2 id="PathMeasure"><a href="#PathMeasure" class="headerlink" title="PathMeasure"></a>PathMeasure</h2><p>PathMeasure是Path的坐标计算器，可以获取Path上每一个构成点的坐标。<br>初始化：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PathMeasure pathMeasure = <span class="keyword">new</span> PathMeasure();</span><br><span class="line">pathMeasure.setPath(path, <span class="keyword">true</span>);</span><br><span class="line"><span class="comment">// 或者使用有参构造法</span></span><br><span class="line">PathMeasure(Path path, <span class="keyword">boolean</span> forceClosed)</span><br></pre></td></tr></table></figure></p>
+<p>forceClosed，简单的说，就是Path最终是否需要闭合，如果为True的话，则不管关联的Path是否是闭合的，都会被闭合。对绑定的Path没有影响，但是对PathMeasure的测量结果有影响，会包含最后一段闭合的路劲。</p>
+<p>重要api：</p>
+<ul>
+<li>getSegment(start, stop, dst, move):将start到stop之间的path添加到dst中，可以重复添加，不会被覆盖</li>
+<li>nextContour():如果有多个contour的时候，跳入到下一个contour</li>
+</ul>
+<h2 id="核心代码"><a href="#核心代码" class="headerlink" title="核心代码"></a>核心代码</h2><p>1.通过Paint.getTextPath获取文字path：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">initTextPath</span><span class="params">()</span> </span>&#123;</span><br><span class="line">     mDst.reset();</span><br><span class="line">     mFontPath.reset();</span><br><span class="line">     mTextPaint.getTextPath(mText, <span class="number">0</span>, mText.length(), <span class="number">0</span>,mTextPaint.getTextSize(), mFontPath);</span><br><span class="line">     <span class="comment">// pathMeasure绑定path，就可以进行测量</span></span><br><span class="line">     mPathMeasure.setPath(mFontPath, <span class="keyword">false</span>);</span><br><span class="line">     mLengthSum = mPathMeasure.getLength();</span><br><span class="line">     <span class="comment">//获取所有路径的总长度</span></span><br><span class="line">     <span class="keyword">while</span> (mPathMeasure.nextContour()) &#123;</span><br><span class="line">         mLengthSum += mPathMeasure.getLength();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
+<p>2.通过动画进度来控制绘制<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">mAnimator.addUpdateListener(<span class="keyword">new</span> ValueAnimator.AnimatorUpdateListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationUpdate</span><span class="params">(ValueAnimator valueAnimator)</span> </span>&#123;</span><br><span class="line">        mAnimatorValue = (<span class="keyword">float</span>) valueAnimator.getAnimatedValue();</span><br><span class="line">        drawPath(mAnimatorValue);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">startAnimation</span><span class="params">()</span></span>&#123;</span><br><span class="line">  initTextPath()  <span class="comment">// 获取到Text的path,放在mDst中</span></span><br><span class="line">  mAnimation.start()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 绘制出已计算出的</span></span><br><span class="line"><span class="keyword">void</span> View.onDraw()&#123;</span><br><span class="line">  canvas.drawPath(mDst, mDrawPaint);  <span class="comment">// 这里的mDst由drawPath随时更新</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据动画进行比例计算出需要绘制的path</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">drawPath</span><span class="params">(<span class="keyword">float</span> progress)</span> </span>&#123;</span><br><span class="line">        mAnimatorValue = progress;</span><br><span class="line">        mStop = mLengthSum * progress;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//重置路径,目的是从开头的字开始重新测量。</span></span><br><span class="line">        mPathMeasure.setPath(mFontPath, <span class="keyword">false</span>);</span><br><span class="line">        mDst.reset();</span><br><span class="line">        mPaintPath.reset();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//根据进度获取路径</span></span><br><span class="line">        <span class="keyword">while</span> (mStop &gt; mPathMeasure.getLength()) &#123;</span><br><span class="line">            mStop = mStop - mPathMeasure.getLength();</span><br><span class="line">            mPathMeasure.getSegment(<span class="number">0</span>, mPathMeasure.getLength(), mDst, <span class="keyword">true</span>); <span class="comment">// 这里计算出来的Path会和后面的0-stop的path相加</span></span><br><span class="line">            <span class="keyword">if</span> (!mPathMeasure.nextContour()) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        mPathMeasure.getSegment(<span class="number">0</span>, mStop, mDst, <span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//绘画画笔效果</span></span><br><span class="line">        <span class="keyword">if</span> (showPainterActually) &#123;</span><br><span class="line">            mPathMeasure.getPosTan(mStop, mCurPos, <span class="keyword">null</span>);</span><br><span class="line">            drawPaintPath(mCurPos[<span class="number">0</span>], mCurPos[<span class="number">1</span>], mPaintPath);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//绘画路径</span></span><br><span class="line">        postInvalidate();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从上面可以看到，只要我们修改一下，把while循环的起点改为每一个contour，分别绘制对应的比例就行。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (mPathMeasure.nextContour()) &#123;</span><br><span class="line">    mLength = mPathMeasure.getLength();</span><br><span class="line">    mStop = mLength * mAnimatorValue;</span><br><span class="line">    mPathMeasure.getSegment(<span class="number">0</span>, mStop, mDst, <span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//绘画画笔效果</span></span><br><span class="line">    <span class="keyword">if</span> (showPainterActually) &#123;</span><br><span class="line">        mPathMeasure.getPosTan(mStop, mCurPos, <span class="keyword">null</span>);</span><br><span class="line">        drawPaintPath(mCurPos[<span class="number">0</span>],mCurPos[<span class="number">1</span>],mPaintPath);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="启示"><a href="#启示" class="headerlink" title="启示"></a>启示</h2><p>onDraw里面是不能进行耗时操作的，所以在动画进行的回调函数中去进行progress的判断，然后更新onDraw里面要用到的数值。</p>
+<p>。</p>
+
       
     </div>
     
@@ -416,8 +428,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -432,7 +453,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -443,7 +464,7 @@
               
               <div class="site-state-item site-state-categories">
                 
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">分类</span>
                 
               </div>
@@ -454,7 +475,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -477,6 +498,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#TextPathView源码学习"><span class="nav-number">1.</span> <span class="nav-text">TextPathView源码学习</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#PathMeasure"><span class="nav-number">1.1.</span> <span class="nav-text">PathMeasure</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#核心代码"><span class="nav-number">1.2.</span> <span class="nav-text">核心代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#启示"><span class="nav-number">1.3.</span> <span class="nav-text">启示</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
