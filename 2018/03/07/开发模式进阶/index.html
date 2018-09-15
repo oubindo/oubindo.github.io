@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Android进阶 源码," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="常见的开发模式MVPMVP也就是model-view-presenter模式。由presenter来连接model和view之间的联系，并且进行view里面的逻辑操作。好处是使得view更加简洁，逻辑清楚易于维护。 缺点是  大量引入类，开发者可能不能辨别三层的具体分工导致无法解耦。 MVP以UI和事件为驱动，数据被动的通过UI来展示，但是数据的时变性，我们希望数据能转被动为主动，由数据来推动UI">
+<meta name="keywords" content="Android进阶 源码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="开发模式进阶">
+<meta property="og:url" content="http://yoursite.com/2018/03/07/开发模式进阶/index.html">
+<meta property="og:site_name" content="Coding and Learning">
+<meta property="og:description" content="常见的开发模式MVPMVP也就是model-view-presenter模式。由presenter来连接model和view之间的联系，并且进行view里面的逻辑操作。好处是使得view更加简洁，逻辑清楚易于维护。 缺点是  大量引入类，开发者可能不能辨别三层的具体分工导致无法解耦。 MVP以UI和事件为驱动，数据被动的通过UI来展示，但是数据的时变性，我们希望数据能转被动为主动，由数据来推动UI">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307191551416.png">
+<meta property="og:image" content="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307203951504.png">
+<meta property="og:image" content="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307193527676.png">
+<meta property="og:image" content="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-2018030720122662.png">
+<meta property="og:updated_time" content="2018-09-15T06:39:45.836Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="开发模式进阶">
+<meta name="twitter:description" content="常见的开发模式MVPMVP也就是model-view-presenter模式。由presenter来连接model和view之间的联系，并且进行view里面的逻辑操作。好处是使得view更加简洁，逻辑清楚易于维护。 缺点是  大量引入类，开发者可能不能辨别三层的具体分工导致无法解耦。 MVP以UI和事件为驱动，数据被动的通过UI来展示，但是数据的时变性，我们希望数据能转被动为主动，由数据来推动UI">
+<meta name="twitter:image" content="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307191551416.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/03/07/开发模式进阶/"/>
+
+
+
+
+
+  <title>开发模式进阶 | Coding and Learning</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Coding and Learning</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">oubindo的技术与生活博客</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/07/开发模式进阶/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">开发模式进阶</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-07T18:15:37+08:00">
+                2018-03-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android进阶/" itemprop="url" rel="index">
+                    <span itemprop="name">Android进阶</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="常见的开发模式"><a href="#常见的开发模式" class="headerlink" title="常见的开发模式"></a>常见的开发模式</h1><h2 id="MVP"><a href="#MVP" class="headerlink" title="MVP"></a>MVP</h2><p>MVP也就是model-view-presenter模式。由presenter来连接model和view之间的联系，并且进行view里面的逻辑操作。好处是使得view更加简洁，逻辑清楚易于维护。</p>
+<p>缺点是</p>
+<ul>
+<li>大量引入类，开发者可能不能辨别三层的具体分工导致无法解耦。</li>
+<li>MVP以UI和事件为驱动，数据被动的通过UI来展示，但是数据的时变性，我们希望数据能转被动为主动，由数据来推动UI。</li>
+<li>一旦V层某个UI元素更改，那么对应的接口和事件监听都得改。</li>
+</ul>
+<p>下面分析google的mvp项目</p>
+<h3 id="todo-mvp"><a href="#todo-mvp" class="headerlink" title="todo-mvp"></a>todo-mvp</h3><p>google Mvp架构</p>
+<p><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307191551416.png" alt=""></p>
+<p>技术亮点：<br>1.xml属性：parentActivityName:指定activity的父activity，系统会读取该属性，以确定当用户按下操作栏中的“向上”按钮时应该启动哪一个 Activity。 系统还可以利用这些信息通过 TaskStackBuilder 合成 Activity 的返回栈。</p>
+<p>2.xml属性：noHistory:当用户离开 Activity 并且其在屏幕上不再可见时，是否应从 Activity 堆栈中将其移除并完成。当为true时onActivityResult无法取得数据。</p>
+<h2 id="MVVM"><a href="#MVVM" class="headerlink" title="MVVM"></a>MVVM</h2><p>参考<a href="https://tech.meituan.com/android_mvvm.html" target="_blank" rel="noopener">如何构建Android MVVM应用框架</a><br>具体角色与MVP相似，Presenter由ViewModel替换，Model的角色扩展了，添加了进行数据的获取，存储，数据状态变化的任务。MVVM的目标和思想与MVP类似，利用数据绑定(Data Binding)、依赖属性(Dependency Property)、命令(Command)、路由事件(Routed Event)等新特性，打造了一个更加灵活高效的架构。</p>
+<p>数据驱动<br>在常规的开发模式中，数据变化需要更新UI的时候，需要先获取UI控件的引用，然后再更新UI。获取用户的输入和操作也需要通过UI控件的引用。在MVVM中，这些都是通过数据驱动来自动完成的，数据变化后会自动更新UI，UI的改变也能自动反馈到数据层，数据成为主导因素。这样MVVM层在业务逻辑处理中只要关心数据，不需要直接和UI打交道</p>
+<p>低耦合度<br>MVVM模式中，数据是独立于UI的。数据和业务逻辑处于一个独立的ViewModel中，ViewModel只需要关注数据和业务逻辑，不需要和UI或者控件打交道。UI想怎么处理数据都由UI自己决定，ViewModel不涉及任何和UI相关的事，也不持有UI控件的引用。即便是控件改变了（比如：TextView换成EditText），ViewModel也几乎不需要更改任何代码。它非常完美的解耦了View层和ViewModel，解决了上面我们所说的MVP的痛点。</p>
+<p>更新UI<br>在MVVM中，数据发生变化后，我们在工作线程直接修改（在数据是线程安全的情况下）ViewModel的数据即可，不用再考虑要切到主线程更新UI了，这些事情相关框架都帮我们做了。</p>
+<p>可复用性<br>一个ViewModel可以复用到多个View中。同样的一份数据，可以提供给不同的UI去做展示。对于版本迭代中频繁的UI改动，更新或新增一套View即可。如果想在UI上做A/B Testing，那MVVM是你不二选择。</p>
+<p>架构：<br><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307203951504.png" alt=""></p>
+<p><strong>ViewModel与View协作</strong><br>ViewModel和View是通过绑定的方式连接在一起的，绑定分成两种：一种是数据绑定，一种是命令绑定。数据的绑定DataBinding已经提供好了，简单地定义一些ObservableField就能把数据和控件绑定在一起了。我们看ViewModel的结构：</p>
+<ul>
+<li>Context：用于网络判断生命周期，防止请求回来时Activity已经销毁及工具类等</li>
+<li>Model：其实就是Java Bean，可以用来生成对应的ObservableField。这是肯定需要持有的。</li>
+<li>Data Field(数据绑定)：需要绑定到控件上的ObservableField字段。</li>
+<li>Command(命令绑定)：对事件的处理，比如下拉，加载，点击等。存在的问题是如果不使用三方库可能需要持有View的引用，等会需要特别注意一下这里。使用DataBinding就可以在xml中绑定View的处理命令</li>
+<li>Child ViewModel：子vm，比如一个Activity由两个Fragment，这样就可以有两个子vm</li>
+</ul>
+<p><strong>ViewModel与Model协作</strong><br>ViewModel通过传参数到Model层获取网络数据（数据库同理），然后把Model的部分数据映射到ViewModel的一些字段（ObservableField），并在ViewModel保留这个Model的引用</p>
+<p><strong>ViewModel与ViewModel的协作</strong><br>用Messenger来在ViewModel中进行通讯。</p>
+<h2 id="Clean-Architecture"><a href="#Clean-Architecture" class="headerlink" title="Clean-Architecture"></a>Clean-Architecture</h2><p>基本思想：<br><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307193527676.png" alt=""></p>
+<p>项目架构：<br><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-2018030720122662.png" alt=""></p>
+<p>Presenter层可以使用MVP或MVVM模式，Data Layer负责获取数据，不管是数据库还是磁盘，网络都是用这层来处理。Domain layer负责处理使用场景，也就是负责处理逻辑。相当于Presenter层的Presenter需要依赖Domain layer才能真正处理逻辑。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android进阶-源码/" rel="tag"># Android进阶 源码</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/02/源码周读计划开门篇/" rel="next" title="源码周读计划开门篇">
+                <i class="fa fa-chevron-left"></i> 源码周读计划开门篇
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/09/TextPathView源码学习/" rel="prev" title="TextPathView源码学习">
+                TextPathView源码学习 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">oubindo</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#常见的开发模式"><span class="nav-number">1.</span> <span class="nav-text">常见的开发模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#MVP"><span class="nav-number">1.1.</span> <span class="nav-text">MVP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#todo-mvp"><span class="nav-number">1.1.1.</span> <span class="nav-text">todo-mvp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MVVM"><span class="nav-number">1.2.</span> <span class="nav-text">MVVM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Clean-Architecture"><span class="nav-number">1.3.</span> <span class="nav-text">Clean-Architecture</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">oubindo</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
