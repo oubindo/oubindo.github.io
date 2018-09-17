@@ -230,6 +230,181 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/17/从0到1完成一个健身App/从0到1之一：开篇词与项目总体架构/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/17/从0到1完成一个健身App/从0到1之一：开篇词与项目总体架构/" itemprop="url">从零到一完成一个健身App之一：开篇词和项目概述</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-17T10:15:00+08:00">
+                2018-09-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/从零到一健身App/" itemprop="url" rel="index">
+                    <span itemprop="name">从零到一健身App</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="从零到一完成一个健身App"><a href="#从零到一完成一个健身App" class="headerlink" title="从零到一完成一个健身App"></a>从零到一完成一个健身App</h1><h2 id="一-开篇词"><a href="#一-开篇词" class="headerlink" title="一.开篇词"></a>一.开篇词</h2><p>我的计划是用一年半到两年的时间完成一个健身App。</p>
+<p>1.目的：我是一个喜欢接受新技术的人。但是我又是一个很懒的人，这种懒惰体现在自己对于技术可能很多时候只限于使用的地步，而没有去深挖技术内部原理和实现细节，并且对于App的设计也缺乏一定的思考。现在自己已经在公司工作两个月了，从公司的项目中开阔了眼界。但是苦于没有地方练手。所以想找个App把自己学到的应用上来。目前来看，自己对于Android较为深入的技术都缺乏认知，都是需要强补的。这也是我想从头开始设计一个好的应用的原因。</p>
+<p>2.项目现状与预期：这个应用是我为自己这种健身爱好者量身打造的应用，也打算部分参考keep和抖音的设计。之前未毕业前就有开始过这个项目的开发，但是当时因为毕业而搁置了。现在再拿出来看，当时的代码写的非常的傻逼。于是打算推翻重来。预期是：</p>
+<ul>
+<li>学会使用主流框架，如fresco，Architecture Component，RxJava等。</li>
+<li>结合组件化和插件化，热修复等技术</li>
+<li>对于一些较为简单的工具，如路由框架，能自行编写</li>
+<li>关注性能优化</li>
+<li>在项目的一些模块中能接触到深度学习。做一个AI赋能的App</li>
+</ul>
+<p>3.项目计划：因为现在在公司项目中确实压力比较大，10，10，大小周。目前来看，自己能用在这个项目上的时间是早上的八点半到十点。晚上的十点四十到十一点四十。周末也有时间可以搞一搞。考虑到自己可能需要学习很多的知识，而且自己平时的时间也不一定能放到这个上面来，预计需要一年半到两年的时间里完成这个项目。在这两年里，我会每两周根据自己的项目情况完成一篇博客。因为是自己的项目，代码中不会出现公司的代码，所有的代码都是自己学习后产出的。也不希望有人将我这项目用于商业目的。</p>
+<p>4.专栏适合的人群：</p>
+<ul>
+<li>有一定Android开发经验，处于Android基础和进阶之间的人</li>
+<li>想通过一个完整项目接触到当前互联网公司里最火热的技术的人</li>
+<li>作为Android开发，想接触到深度学习等在Android中应用的人</li>
+<li>适用于想一步一步提升自己各方面Android技术的人</li>
+</ul>
+<h2 id="二。项目概述"><a href="#二。项目概述" class="headerlink" title="二。项目概述"></a>二。项目概述</h2><p>1.项目将会采用的总体架构：</p>
+<ul>
+<li><p>MVVM和Architecture Component：相信大家都知道有MVC，MVP，和MVVM三种架构，MVC就不说了，MVP在很长的一段时间里都是主流，但是已经体验过MVVM的我不可能再用MVP了-_- 。常用的MVVM框架有databinding，但是databinding会带来业务代码耦合进xml中的问题，扩展性也差。我决定使用google的Architecture Component。谷爹出品，值得信赖，而且还挺好用的，很多数据问题都得到了解决。</p>
+</li>
+<li><p>RxJava：Rxjava作为一个成熟的库，事件流和函数式编程的思想深入人心</p>
+</li>
+<li>okhttp+retrofit：这两个框架是当今大厂的主流网络框架，也是学习网络相关的重要入口，我会在基本使用的基础上去挖掘相关的值得学习和有亮点的地方。</li>
+<li>fresco：这也是最强大和性能最好的图片框架了。</li>
+<li>插件化+组件化+热修复：这三个是类似的，但是又有一些区别。我倾向于每种技术都自己实现一个框架，其中组件化的路由框架我是一定要写的，代码量并不多。其他的就等到时候再看，如果有时间就自己写一个。</li>
+<li>AOP技术：主要是用来进行日志和自动埋点等。目前对这块不是特别熟悉，等到时候再考虑吧。</li>
+<li>JNA：由于之前没怎么接触过JNI技术，对相关的技术都不是很了解。所以在这个项目中想加入一些特效相关的处理，这也是我的兴趣所在。不可避免的要使用到native方法。因此打算使用JNA这个库</li>
+<li>深度学习框架：目前暂定ncnn，腾讯优图出品的开源深度学习框架，看评测是要强于目前所有已知开源框架。</li>
+<li>数据库：因为Realm的一些坑，数据库框架打算采用GreenDao。</li>
+<li>下载库：打算自己实现一个比较有意思的库。目前公司的项目有，自己可以吸收其精华，去掉自己不需要的部分。</li>
+</ul>
+<p>再次声明：本项目中不会有公司项目的源码，都是自己完成。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/10/美国大学Online课程推荐及个人评测/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1346,7 +1521,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">8</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1357,7 +1532,7 @@
               
               <div class="site-state-item site-state-categories">
                 
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">categories</span>
                 
               </div>
@@ -1368,7 +1543,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">tags</span>
                 
               </div>
