@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Method HandlesMethod Hanldes是在Java 7引入的概念。全限定名是java.lang.invoke.MethodHandles。在这篇文章中，我们将学会如何创建，使用MethodHandles及它的原理。 1.介绍Method Handles的引入是为了与已经存在的java.lang.reflect API相配合。他们分别是为了解决不同的问题而出现的。从性能角度上说，M">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Coding and Learning">
+<meta property="og:url" content="http://yoursite.com/2018/10/18/Java知识深入/你所不知道的Method Handles/index.html">
+<meta property="og:site_name" content="Coding and Learning">
+<meta property="og:description" content="Method HandlesMethod Hanldes是在Java 7引入的概念。全限定名是java.lang.invoke.MethodHandles。在这篇文章中，我们将学会如何创建，使用MethodHandles及它的原理。 1.介绍Method Handles的引入是为了与已经存在的java.lang.reflect API相配合。他们分别是为了解决不同的问题而出现的。从性能角度上说，M">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://ovkwd4vse.bkt.clouddn.com/屏幕快照 2018-10-19 上午10.19.20.png">
+<meta property="og:updated_time" content="2019-01-02T08:50:03.685Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Coding and Learning">
+<meta name="twitter:description" content="Method HandlesMethod Hanldes是在Java 7引入的概念。全限定名是java.lang.invoke.MethodHandles。在这篇文章中，我们将学会如何创建，使用MethodHandles及它的原理。 1.介绍Method Handles的引入是为了与已经存在的java.lang.reflect API相配合。他们分别是为了解决不同的问题而出现的。从性能角度上说，M">
+<meta name="twitter:image" content="http://ovkwd4vse.bkt.clouddn.com/屏幕快照 2018-10-19 上午10.19.20.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/10/18/Java知识深入/你所不知道的Method Handles/"/>
+
+
+
+
+
+  <title> | Coding and Learning</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Coding and Learning</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">oubindo的技术与生活博客</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/10/18/Java知识深入/你所不知道的Method Handles/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline"></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-10-18T09:57:05+08:00">
+                2018-10-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Method-Handles"><a href="#Method-Handles" class="headerlink" title="Method Handles"></a>Method Handles</h2><p>Method Hanldes是在Java 7引入的概念。全限定名是java.lang.invoke.MethodHandles。在这篇文章中，我们将学会如何创建，使用MethodHandles及它的原理。</p>
+<h3 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1.介绍"></a>1.介绍</h3><p>Method Handles的引入是为了与已经存在的java.lang.reflect API相配合。他们分别是为了解决不同的问题而出现的。从性能角度上说，MethodHandle api要比反射快很多因为访问检查在创建的时候就已经完成了，而不是像反射一样等到运行时候才检查。但同时，Method Handles比反射更难用，因为没有列举类中成员，获取属性访问标志之类的机制。<br>另外，MethodHandles可以操作方法，更改方法参数的类型和他们的顺序。而反射则没有这些功能。<br>从以上角度看，反射更通用，但是安全性更差，因为可以在不授权的情况下使用反射对象。而method Handles遵从了分享者的能力。所以method handle是一种更低级的发现，适配和调用方法的方式，唯一的优点就是更快。所以反射更适合主流Java开发者，而method handle更适用于对编译和运行性能有要求的人。</p>
+<h3 id="2-使用"><a href="#2-使用" class="headerlink" title="2.使用"></a>2.使用</h3><p>1.要使用method handle，首先需要得到Lookup。这是创造方法，构造函数，属性的method handles的工厂类。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// public方法的Lookup</span></span><br><span class="line">MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();</span><br><span class="line"><span class="comment">// 所有方法的Lookup</span></span><br><span class="line">MethodHandles.Lookup lookup = MethodHandles.lookup();</span><br></pre></td></tr></table></figure></p>
+<p>2.要创建MethodHandle，lookup需要一个定义了它的类型的MethodType对象。这里的类型包括了传入参数的类型，和最后返回的类型，要一一对应。第一个是返回类型，如果没有返回值就是Void.class, 后面是可变的传入参数的类型。</p>
+<blockquote>
+<p> a MethodType represents the arguments and return type accepted and returned by a method handle or passed and expected by a method handle caller.</p>
+</blockquote>
+<p>例如<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 接收数组，返回一个List对象</span></span><br><span class="line">MethodType mt = MethodType.methodType(List.class, Object[].class);</span><br></pre></td></tr></table></figure></p>
+<p>3.查找MethodHandle<br>Lookup之所以叫Lookup自然是因为他们有查找MethodHandle的能力。先看看他的方法。<br><img src="http://ovkwd4vse.bkt.clouddn.com/屏幕快照 2018-10-19 上午10.19.20.png" alt="屏幕快照 2018-10-19 上午10.19.20.png"></p>
+<p>4.接下来就可以进行查找并调用了<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MethodType mt = MethodType.methodType(String.class, <span class="keyword">char</span>.class, <span class="keyword">char</span>.class);</span><br><span class="line">MethodHandle replaceMH = publicLookup.findVirtual(String.class, <span class="string">"replace"</span>, mt);</span><br><span class="line"> </span><br><span class="line">String output = (String) replaceMH.invoke(<span class="string">"jovo"</span>, Character.valueOf(<span class="string">'o'</span>), <span class="string">'a'</span>);</span><br></pre></td></tr></table></figure></p>
+<p>5.方法调用细则：<br>有三种方法可以调用方法invoke(), invokeWithArugments()和invokeExact()，当我们使用invoke时，我们必须固定arguments的数目。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// invoke使用</span></span><br><span class="line">MethodType mt = MethodType.methodType(String.class, <span class="keyword">char</span>.class, <span class="keyword">char</span>.class);</span><br><span class="line">MethodHandle replaceMH = publicLookup.findVirtual(String.class, <span class="string">"replace"</span>, mt);</span><br><span class="line">String output = (String) replaceMH.invoke(<span class="string">"jovo"</span>, Character.valueOf(<span class="string">'o'</span>), <span class="string">'a'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// invokeWithArguments使用</span></span><br><span class="line">MethodType mt = MethodType.methodType(List.class, Object[].class);</span><br><span class="line">MethodHandle asList = publicLookup.findStatic(Arrays.class, <span class="string">"asList"</span>, mt);</span><br><span class="line">List&lt;Integer&gt; list = (List&lt;Integer&gt;) asList.invokeWithArguments(<span class="number">1</span>,<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// invokeExact</span></span><br><span class="line">MethodType mt = MethodType.methodType(<span class="keyword">int</span>.class, <span class="keyword">int</span>.class, <span class="keyword">int</span>.class);</span><br><span class="line">MethodHandle sumMH = lookup.findStatic(Integer.class, <span class="string">"sum"</span>, mt);</span><br><span class="line"><span class="keyword">int</span> sum = (<span class="keyword">int</span>) sumMH.invokeExact(<span class="number">1</span>, <span class="number">11</span>);</span><br></pre></td></tr></table></figure></p>
+<p>具体的区别是：</p>
+<blockquote>
+<p>与invokeExact方法不同，invoke方法允许更加松散的调用方式。它会尝试在调用的时候进行返回值和参数类型的转换工作。这是通过MethodHandle类的asType方法来完成的，asType方法的作用是把当前方法句柄适配到新的MethodType上面，并产生一个新的方法句柄。当方法句柄在调用时的类型与其声明的类型完全一致的时候，调用invoke方法等于调用invokeExact方法；否则，invoke方法会先调用asType方法来尝试适配到调用时的类型。如果适配成功，则可以继续调用。否则会抛出相关的异常。这种灵活的适配机制，使invoke方法成为在绝大多数情况下都应该使用的方法句柄调用方式。</p>
+</blockquote>
+<p>参考：<br><a href="https://www.baeldung.com/java-method-handles" target="_blank" rel="noopener">https://www.baeldung.com/java-method-handles</a><br><a href="https://www.cnblogs.com/night-wind/p/4405564.html" target="_blank" rel="noopener">https://www.cnblogs.com/night-wind/p/4405564.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/17/从0到1完成一个健身App/从0到1之二：路由框架设计/" rel="next" title="">
+                <i class="fa fa-chevron-left"></i> 
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/22/书海拾贝/自控力/" rel="prev" title="">
+                 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">oubindo</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Method-Handles"><span class="nav-number">1.</span> <span class="nav-text">Method Handles</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-介绍"><span class="nav-number">1.1.</span> <span class="nav-text">1.介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-使用"><span class="nav-number">1.2.</span> <span class="nav-text">2.使用</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">oubindo</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

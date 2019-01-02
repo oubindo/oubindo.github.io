@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="源码," />
+  <meta name="keywords" content="Hexo, NexT" />
 
 
 
@@ -79,18 +79,14 @@
 
 
 
-<meta name="description" content="TextPathView源码学习PathMeasurePathMeasure是Path的坐标计算器，可以获取Path上每一个构成点的坐标。初始化：1234PathMeasure pathMeasure = new PathMeasure();pathMeasure.setPath(path, true);// 或者使用有参构造法PathMeasure(Path path, boolean forc">
-<meta name="keywords" content="源码">
-<meta property="og:type" content="article">
-<meta property="og:title" content="TextPathView源码学习">
-<meta property="og:url" content="http://yoursite.com/2018/03/09/TextPathView源码学习/index.html">
+<meta name="keywords" content="Android">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Coding and Learning">
+<meta property="og:url" content="http://yoursite.com/page/2/index.html">
 <meta property="og:site_name" content="Coding and Learning">
-<meta property="og:description" content="TextPathView源码学习PathMeasurePathMeasure是Path的坐标计算器，可以获取Path上每一个构成点的坐标。初始化：1234PathMeasure pathMeasure = new PathMeasure();pathMeasure.setPath(path, true);// 或者使用有参构造法PathMeasure(Path path, boolean forc">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-03-14T15:19:20.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="TextPathView源码学习">
-<meta name="twitter:description" content="TextPathView源码学习PathMeasurePathMeasure是Path的坐标计算器，可以获取Path上每一个构成点的坐标。初始化：1234PathMeasure pathMeasure = new PathMeasure();pathMeasure.setPath(path, true);// 或者使用有参构造法PathMeasure(Path path, boolean forc">
+<meta name="twitter:title" content="Coding and Learning">
 
 
 
@@ -120,13 +116,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/03/09/TextPathView源码学习/"/>
+  <link rel="canonical" href="http://yoursite.com/page/2/"/>
 
 
 
 
 
-  <title>TextPathView源码学习 | Coding and Learning</title>
+  <title>Coding and Learning</title>
   
 
 
@@ -145,7 +141,8 @@
     
   
 
-  <div class="container sidebar-position-left page-post-detail">
+  <div class="container sidebar-position-left 
+  page-home">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -218,9 +215,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-
-  <div id="posts" class="posts-expand">
+  <section id="posts" class="posts-expand">
     
+      
 
   
 
@@ -250,7 +247,9 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">TextPathView源码学习</h1>
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/09/TextPathView源码学习/" itemprop="url">TextPathView源码学习</a></h1>
         
 
         <div class="post-meta">
@@ -322,7 +321,9 @@
       
 
       
-        <h1 id="TextPathView源码学习"><a href="#TextPathView源码学习" class="headerlink" title="TextPathView源码学习"></a>TextPathView源码学习</h1><h2 id="PathMeasure"><a href="#PathMeasure" class="headerlink" title="PathMeasure"></a>PathMeasure</h2><p>PathMeasure是Path的坐标计算器，可以获取Path上每一个构成点的坐标。<br>初始化：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PathMeasure pathMeasure = <span class="keyword">new</span> PathMeasure();</span><br><span class="line">pathMeasure.setPath(path, <span class="keyword">true</span>);</span><br><span class="line"><span class="comment">// 或者使用有参构造法</span></span><br><span class="line">PathMeasure(Path path, <span class="keyword">boolean</span> forceClosed)</span><br></pre></td></tr></table></figure></p>
+        
+          
+            <h1 id="TextPathView源码学习"><a href="#TextPathView源码学习" class="headerlink" title="TextPathView源码学习"></a>TextPathView源码学习</h1><h2 id="PathMeasure"><a href="#PathMeasure" class="headerlink" title="PathMeasure"></a>PathMeasure</h2><p>PathMeasure是Path的坐标计算器，可以获取Path上每一个构成点的坐标。<br>初始化：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PathMeasure pathMeasure = <span class="keyword">new</span> PathMeasure();</span><br><span class="line">pathMeasure.setPath(path, <span class="keyword">true</span>);</span><br><span class="line"><span class="comment">// 或者使用有参构造法</span></span><br><span class="line">PathMeasure(Path path, <span class="keyword">boolean</span> forceClosed)</span><br></pre></td></tr></table></figure></p>
 <p>forceClosed，简单的说，就是Path最终是否需要闭合，如果为True的话，则不管关联的Path是否是闭合的，都会被闭合。对绑定的Path没有影响，但是对PathMeasure的测量结果有影响，会包含最后一段闭合的路劲。</p>
 <p>重要api：</p>
 <ul>
@@ -335,6 +336,8 @@
 <h2 id="启示"><a href="#启示" class="headerlink" title="启示"></a>启示</h2><p>onDraw里面是不能进行耗时操作的，所以在动画进行的回调函数中去进行progress的判断，然后更新onDraw里面要用到的数值。</p>
 <p>。</p>
 
+          
+        
       
     </div>
     
@@ -349,40 +352,14 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/源码/" rel="tag"># 源码</a>
-          
-        </div>
+
+      
+
       
 
       
       
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2018/03/07/开发模式进阶/" rel="next" title="开发模式进阶">
-                <i class="fa fa-chevron-left"></i> 开发模式进阶
-              </a>
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/11/生成模型与判别模型/" rel="prev" title="生成模型与判别模型">
-                生成模型与判别模型 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
+        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -392,11 +369,186 @@
   </article>
 
 
+    
+      
 
-    <div class="post-spread">
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/07/开发模式进阶/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/07/开发模式进阶/" itemprop="url">开发模式进阶</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-07T18:15:37+08:00">
+                2018-03-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Android进阶/" itemprop="url" rel="index">
+                    <span itemprop="name">Android进阶</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="常见的开发模式"><a href="#常见的开发模式" class="headerlink" title="常见的开发模式"></a>常见的开发模式</h1><h2 id="MVP"><a href="#MVP" class="headerlink" title="MVP"></a>MVP</h2><p>MVP也就是model-view-presenter模式。由presenter来连接model和view之间的联系，并且进行view里面的逻辑操作。好处是使得view更加简洁，逻辑清楚易于维护。</p>
+<p>缺点是</p>
+<ul>
+<li>大量引入类，开发者可能不能辨别三层的具体分工导致无法解耦。</li>
+<li>MVP以UI和事件为驱动，数据被动的通过UI来展示，但是数据的时变性，我们希望数据能转被动为主动，由数据来推动UI。</li>
+<li>一旦V层某个UI元素更改，那么对应的接口和事件监听都得改。</li>
+</ul>
+<p>下面分析google的mvp项目</p>
+<h3 id="todo-mvp"><a href="#todo-mvp" class="headerlink" title="todo-mvp"></a>todo-mvp</h3><p>google Mvp架构</p>
+<p><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307191551416.png" alt=""></p>
+<p>技术亮点：<br>1.xml属性：parentActivityName:指定activity的父activity，系统会读取该属性，以确定当用户按下操作栏中的“向上”按钮时应该启动哪一个 Activity。 系统还可以利用这些信息通过 TaskStackBuilder 合成 Activity 的返回栈。</p>
+<p>2.xml属性：noHistory:当用户离开 Activity 并且其在屏幕上不再可见时，是否应从 Activity 堆栈中将其移除并完成。当为true时onActivityResult无法取得数据。</p>
+<h2 id="MVVM"><a href="#MVVM" class="headerlink" title="MVVM"></a>MVVM</h2><p>参考<a href="https://tech.meituan.com/android_mvvm.html" target="_blank" rel="noopener">如何构建Android MVVM应用框架</a><br>具体角色与MVP相似，Presenter由ViewModel替换，Model的角色扩展了，添加了进行数据的获取，存储，数据状态变化的任务。MVVM的目标和思想与MVP类似，利用数据绑定(Data Binding)、依赖属性(Dependency Property)、命令(Command)、路由事件(Routed Event)等新特性，打造了一个更加灵活高效的架构。</p>
+<p>数据驱动<br>在常规的开发模式中，数据变化需要更新UI的时候，需要先获取UI控件的引用，然后再更新UI。获取用户的输入和操作也需要通过UI控件的引用。在MVVM中，这些都是通过数据驱动来自动完成的，数据变化后会自动更新UI，UI的改变也能自动反馈到数据层，数据成为主导因素。这样MVVM层在业务逻辑处理中只要关心数据，不需要直接和UI打交道</p>
+<p>低耦合度<br>MVVM模式中，数据是独立于UI的。数据和业务逻辑处于一个独立的ViewModel中，ViewModel只需要关注数据和业务逻辑，不需要和UI或者控件打交道。UI想怎么处理数据都由UI自己决定，ViewModel不涉及任何和UI相关的事，也不持有UI控件的引用。即便是控件改变了（比如：TextView换成EditText），ViewModel也几乎不需要更改任何代码。它非常完美的解耦了View层和ViewModel，解决了上面我们所说的MVP的痛点。</p>
+<p>更新UI<br>在MVVM中，数据发生变化后，我们在工作线程直接修改（在数据是线程安全的情况下）ViewModel的数据即可，不用再考虑要切到主线程更新UI了，这些事情相关框架都帮我们做了。</p>
+<p>可复用性<br>一个ViewModel可以复用到多个View中。同样的一份数据，可以提供给不同的UI去做展示。对于版本迭代中频繁的UI改动，更新或新增一套View即可。如果想在UI上做A/B Testing，那MVVM是你不二选择。</p>
+<p>架构：<br><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307203951504.png" alt=""></p>
+<p><strong>ViewModel与View协作</strong><br>ViewModel和View是通过绑定的方式连接在一起的，绑定分成两种：一种是数据绑定，一种是命令绑定。数据的绑定DataBinding已经提供好了，简单地定义一些ObservableField就能把数据和控件绑定在一起了。我们看ViewModel的结构：</p>
+<ul>
+<li>Context：用于网络判断生命周期，防止请求回来时Activity已经销毁及工具类等</li>
+<li>Model：其实就是Java Bean，可以用来生成对应的ObservableField。这是肯定需要持有的。</li>
+<li>Data Field(数据绑定)：需要绑定到控件上的ObservableField字段。</li>
+<li>Command(命令绑定)：对事件的处理，比如下拉，加载，点击等。存在的问题是如果不使用三方库可能需要持有View的引用，等会需要特别注意一下这里。使用DataBinding就可以在xml中绑定View的处理命令</li>
+<li>Child ViewModel：子vm，比如一个Activity由两个Fragment，这样就可以有两个子vm</li>
+</ul>
+<p><strong>ViewModel与Model协作</strong><br>ViewModel通过传参数到Model层获取网络数据（数据库同理），然后把Model的部分数据映射到ViewModel的一些字段（ObservableField），并在ViewModel保留这个Model的引用</p>
+<p><strong>ViewModel与ViewModel的协作</strong><br>用Messenger来在ViewModel中进行通讯。</p>
+<h2 id="Clean-Architecture"><a href="#Clean-Architecture" class="headerlink" title="Clean-Architecture"></a>Clean-Architecture</h2><p>基本思想：<br><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180307193527676.png" alt=""></p>
+<p>项目架构：<br><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-2018030720122662.png" alt=""></p>
+<p>Presenter层可以使用MVP或MVVM模式，Data Layer负责获取数据，不管是数据库还是磁盘，网络都是用这层来处理。Domain layer负责处理使用场景，也就是负责处理逻辑。相当于Presenter层的Presenter需要依赖Domain layer才能真正处理逻辑。</p>
+
+          
+        
       
     </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
   </div>
+  
+  
+  
+  </article>
+
+
+    
+  </section>
+
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
+
 
 
           </div>
@@ -404,10 +556,6 @@
 
 
           
-
-  
-
-
 
         </div>
         
@@ -428,17 +576,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
-          </li>
-        </ul>
-      
 
-      <section class="site-overview-wrap sidebar-panel">
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -498,22 +637,6 @@
         </div>
       </section>
 
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#TextPathView源码学习"><span class="nav-number">1.</span> <span class="nav-text">TextPathView源码学习</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#PathMeasure"><span class="nav-number">1.1.</span> <span class="nav-text">PathMeasure</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#核心代码"><span class="nav-number">1.2.</span> <span class="nav-text">核心代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#启示"><span class="nav-number">1.3.</span> <span class="nav-text">启示</span></a></li></ol></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
       
 
       
@@ -647,10 +770,6 @@
   
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
-
 
   
 
