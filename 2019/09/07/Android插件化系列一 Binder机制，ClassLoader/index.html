@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="插件化," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Android插件化系列一: 开篇前言，Binder机制，ClassLoader系列前言Hello，美好的一周又开始啦，让我们开始愉快的学习吧。 从今天开始，我会花较多的时间来跟大家一起学习Android插件化。这一篇文章是Android插件化的启动篇。 Android插件化是之前几年里的一个很火的技术概念。从2012年开始就有人在研究这门技术。从粗糙的AndroidDynamicLoader框架">
+<meta name="keywords" content="插件化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android插件化系列一：开篇前言，Binder机制，ClassLoader">
+<meta property="og:url" content="http://yoursite.com/2019/09/07/Android插件化系列一 Binder机制，ClassLoader/index.html">
+<meta property="og:site_name" content="Coding and Learning">
+<meta property="og:description" content="Android插件化系列一: 开篇前言，Binder机制，ClassLoader系列前言Hello，美好的一周又开始啦，让我们开始愉快的学习吧。 从今天开始，我会花较多的时间来跟大家一起学习Android插件化。这一篇文章是Android插件化的启动篇。 Android插件化是之前几年里的一个很火的技术概念。从2012年开始就有人在研究这门技术。从粗糙的AndroidDynamicLoader框架">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://ws1.sinaimg.cn/large/006tKfTcly1g0qgbl8170j31390u0gu5.jpg">
+<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1g0qhlh17nfj30bn0c4glx.jpg">
+<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1g0r3hyi4obj30k00br74u.jpg">
+<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1g0rnpftgxij30dn0cjaae.jpg">
+<meta property="og:image" content="https://ws1.sinaimg.cn/large/006tKfTcly1g0wlwfnzgtj31n30u0gy7.jpg">
+<meta property="og:updated_time" content="2019-09-15T02:40:08.172Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android插件化系列一：开篇前言，Binder机制，ClassLoader">
+<meta name="twitter:description" content="Android插件化系列一: 开篇前言，Binder机制，ClassLoader系列前言Hello，美好的一周又开始啦，让我们开始愉快的学习吧。 从今天开始，我会花较多的时间来跟大家一起学习Android插件化。这一篇文章是Android插件化的启动篇。 Android插件化是之前几年里的一个很火的技术概念。从2012年开始就有人在研究这门技术。从粗糙的AndroidDynamicLoader框架">
+<meta name="twitter:image" content="https://ws1.sinaimg.cn/large/006tKfTcly1g0qgbl8170j31390u0gu5.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/09/07/Android插件化系列一 Binder机制，ClassLoader/"/>
+
+
+
+
+
+  <title>Android插件化系列一：开篇前言，Binder机制，ClassLoader | Coding and Learning</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Coding and Learning</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">oubindo的技术与生活博客</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/07/Android插件化系列一 Binder机制，ClassLoader/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Android插件化系列一：开篇前言，Binder机制，ClassLoader</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-09-07T18:20:01+08:00">
+                2019-09-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Android插件化系列一-开篇前言，Binder机制，ClassLoader"><a href="#Android插件化系列一-开篇前言，Binder机制，ClassLoader" class="headerlink" title="Android插件化系列一: 开篇前言，Binder机制，ClassLoader"></a>Android插件化系列一: 开篇前言，Binder机制，ClassLoader</h1><h2 id="系列前言"><a href="#系列前言" class="headerlink" title="系列前言"></a>系列前言</h2><p>Hello，美好的一周又开始啦，让我们开始愉快的学习吧。</p>
+<p>从今天开始，我会花较多的时间来跟大家一起学习Android插件化。这一篇文章是Android插件化的启动篇。</p>
+<p>Android插件化是之前几年里的一个很火的技术概念。从2012年开始就有人在研究这门技术。从粗糙的AndroidDynamicLoader框架，到第一代的DroidPlugin等，继而发展到第二代的VirtualApk，Replugin等，再到现如今的VirtualApp，Atlas。插件化在国内逐渐的发展和完善，却也在近几年出现了RN等替代品以后慢慢会走向弱势。</p>
+<p>尽管插件化技术的研究热潮已经过去，但是这门技术本身还是有着大量的技术实践，对于我们了解Android机制很有帮助。所以从这篇文章开始我会写一系列的文章，加上自己对插件化的实践，最后会去从源码角度分析几个优秀的插件化库，形成一套完整的插件化的理论体系。</p>
+<p>下面是插件化的技术框架，也是我这个系列文章的行文思路，</p>
+<p><img src="https://ws1.sinaimg.cn/large/006tKfTcly1g0qgbl8170j31390u0gu5.jpg" alt="Android插件化文章框架"></p>
+<h2 id="一-Binder机制"><a href="#一-Binder机制" class="headerlink" title="一. Binder机制"></a>一. Binder机制</h2><p>网上分析Binder机制的文章已经很多了，在这篇文章里，我不会去讲解Binder的使用，而是会去讲解清楚Binder的设计思路，设计原理和对于插件化的使用。</p>
+<h3 id="为什么需要Binder"><a href="#为什么需要Binder" class="headerlink" title="为什么需要Binder"></a>为什么需要Binder</h3><p>首先我们知道，Android是基于Linux内核开发的。对于Linux来说，操作系统为一个二进制可执行文件创建了一个载有该文件自己的栈，堆、数据映射以及共享库的内存片段，还为其分配特殊的内部管理结构。这就是一个进程。操作系统必须提供公平的使用机制，使得每个进程能正常的开始，执行和终结。</p>
+<p>这样呢，就引入了一个问题。一个进程能不能去操作别的进程的数据呢？我们可以想一下，这是绝对不能出现的，尤其是系统级的进程，如果被别的进程影响了可能会造成整个系统的崩塌。所以我们很自然的想到，我们应该把进程隔离起来，linux也是这样做的，它的虚拟内存机制为每个进程分配连续的内存空间，进程只能操作自己的虚拟内存空间。同时，还必须满足进程之间保持通信的能力，毕竟团结力量大，单凭单个进程的独立运作是不能撑起操作系统的功能需求的。</p>
+<p>为了解决这个问题，Linux引进了用户空间User Space和内核空间Kernel Space的区别。用户空间要想访问内核空间，唯一方式就是系统调用。内核空间通过接口把应用程序请求传给内核处理后返回给应用程序。同时，用户空间进程如果想升级为内核空间进程，需要进行安全检查。</p>
+<blockquote>
+<p>补充知识：系统调用主要通过两个方法：</p>
+<ul>
+<li><p>copy_from_user（）：将用户空间的数据拷贝到内核空间</p>
+</li>
+<li><p>copy_to_user（）：将内核空间的数据拷贝到用户空间</p>
+</li>
+</ul>
+</blockquote>
+<p><img src="https://ws4.sinaimg.cn/large/006tKfTcly1g0qhlh17nfj30bn0c4glx.jpg" alt="linux系统调用"></p>
+<p>以上就是linux系统的跨进程通信机制。而我们马上要说的Binder，就是跨进程的一种方式</p>
+<h3 id="Binder模型"><a href="#Binder模型" class="headerlink" title="Binder模型"></a>Binder模型</h3><p>Binder是一种进程间通信(IPC)方式，Android常见的进程中通信方式有文件共享，Bundle，AIDL，Messenger，ContentProvider，Socket。其中AIDL，Messenger，ContentProvider都是基于Binder。Linux系统通过Binder驱动来管理Binder机制。</p>
+<blockquote>
+<p>Binder的实现基于mmap()系统调用，只用拷贝一次，比常规文件页操作更快。微信开源的MMKV等也是基于此。有兴趣的可以了解一下。</p>
+</blockquote>
+<p>首先Binder机制有四个参与者，Server，Client两个进程，ServiceManager，Binder驱动(内核空间)。其中ServiceManager和Binder驱动都是系统实现的，而Server和Client是需要开发者自己实现的。四者之中只有Binder驱动是运行在内核空间的。</p>
+<p><img src="https://ws2.sinaimg.cn/large/006tKfTcly1g0r3hyi4obj30k00br74u.jpg" alt="Binder机制"></p>
+<p>这里的ServiceManager作为Manager，承担着Binder通信的建立，Binder的注册和传递的能力。Service负责创建Binder，并为他起一个字符形式的名字，然后把Binder和名字通过<strong>通过Binder驱动，借助于ServiceManager自带的Binder</strong>向ServiceManager注册。注意这里，因为Service和ServiceManager也是跨进程通信需要Binder，ServerManager是自带Binder的，所以相对ServiceManager来说Service也就相当于Client了。</p>
+<p>Service注册了这个Binder以后，Client就能通过名字获得Binder的引用了。这里的跨进程通信双方就变成了Client和ServiceManager，然后ServiceManager从Binder表取出<strong>Binder的引用</strong>返给Client，这样的话如果有多个Client的话，多次返回引用就行了，但是事实上引用的都是放在ServiceManager中的Service。</p>
+<p>当Client经过Binder驱动跟Service通信的时候，往往需要获取到Service的某个对象object。这时候为了安全考虑，Binder会把object的代理对象proxyobject返回，这个对象拥有一模一样的方法，但是没有具体能力，只负责接收参数传给真正的object使用。</p>
+<p>所以完整的Binder通信过程是</p>
+<p><img src="https://ws4.sinaimg.cn/large/006tKfTcly1g0rnpftgxij30dn0cjaae.jpg" alt="binder模型"></p>
+<p>OK，跨进程通信就讲清楚了。接下来我们讲讲插件化中的Binder。</p>
+<h3 id="Binder与插件化"><a href="#Binder与插件化" class="headerlink" title="Binder与插件化"></a>Binder与插件化</h3><p>首先，我们先回顾一下Activity的启动过程，Instrumentation调用了ActivityManagerNative，这个AMN是我们的本地对象，然后AMN调用getDefault拿到了ActivityManagerProxy，这个人AMP就是AMS在本地的代理。相当于binder模型中的Client，而这个AMP继承的是IActivityManager，拥有四大组件的所有需要AMS参与的方法。本地通过调用这个AMP方法来间接地调用AMS。这样，我们就调用到了AMS启动了Activity。</p>
+<p>那么，AMS如何与Client进行通信呢？现在我们通过Launcher启动了Activity，肯定要告诉Launcher “没你什么事了，你洗洗睡吧”。大家可以看到，这里双方的角色就发生了改变，AMS需要去发消息，承担Client的角色，而Launcher这时候作为Service提供服务。而这次通信同样也是使用的Binder机制。AMS这边保存了一个ApplicationThreadProxy对象，这个对象就是Launcher的ApplicationThread的代理。AMS通过ATP给App发消息，App通过ApplicationThread处理。</p>
+<p><img src="https://ws1.sinaimg.cn/large/006tKfTcly1g0wlwfnzgtj31n30u0gy7.jpg" alt="Activity启动流程"></p>
+<p>以上，就是Binder机制在Android中的运用，我们后面会通过hook这个过程实现插件化。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>看了这么多，可能还是很多朋友不懂Binder。我也是这样，很长一段时间都不知道Binder到底指的是啥。后来我看到了这样一种定义：</p>
+<ul>
+<li><p>从进程间通信的角度看，Binder 是一种进程间通信的机制；</p>
+</li>
+<li><p>从 Server 进程的角度看，Binder 指的是 Server 中的 Binder 实体对象；</p>
+</li>
+<li><p>从 Client 进程的角度看，Binder 指的是对 Binder 代理对象，是 Binder 实体对象的一个远程代理</p>
+</li>
+<li><p>从传输过程的角度看，Binder 是一个可以跨进程传输的对象；Binder 驱动会对这个跨越进程边界的对象对一点点特殊处理，自动完成代理对象和本地对象之间的转换。</p>
+</li>
+</ul>
+<h2 id="二-ClassLoader"><a href="#二-ClassLoader" class="headerlink" title="二. ClassLoader"></a>二. ClassLoader</h2><h3 id="双亲委托模型"><a href="#双亲委托模型" class="headerlink" title="双亲委托模型"></a>双亲委托模型</h3><p>Java中默认有三种ClassLoader。分别是:</p>
+<ul>
+<li>BootStrap ClassLoader：启动类加载器，最顶层的加载器。主要负责加载JDK中的核心类。在JVM启动后也随着启动，并构造Ext ClassLoader和App ClassLoader。</li>
+<li>Extension ClassLoader：扩展类加载器，负责加载Java的扩展类库。</li>
+<li>App ClassLoader：系统类加载器，负责加载应用程序的所有jar和class文件。</li>
+<li>自定义ClassLoader：需要继承自ClassLoader类。</li>
+</ul>
+<p>ClassLoader默认使用双亲委托模型来搜索类。每个ClassLoader都有一个父类的引用。当ClassLoader需要加载某个类时，先判断是否加载过，如果加载过就返回Class对象。否则交给他的父类去加载，继续判断是否加载过。这样 <code>层层判断</code>，就到了最顶层的BootStrap ClassLoader来试图加载。如果连最顶层的Bootstrap ClassLoader都没加载过，那就加载。如果加载失败，就转交给子ClassLoader，<code>层层加载</code>，直到最底层。如果还不能加载的话那就只能抛出异常了。</p>
+<p>通过这种双亲委托模型，好处是：</p>
+<ul>
+<li>更高效，父类加载一次就可以避免了子类多次重复加载</li>
+<li>更安全，避免了外界伪造java核心类。</li>
+</ul>
+<h3 id="Android中的ClassLoader"><a href="#Android中的ClassLoader" class="headerlink" title="Android中的ClassLoader"></a>Android中的ClassLoader</h3><p>android从5.0开始使用art虚拟机，这种虚拟机在程序运行时也需要ClassLoader将类加载到内存中，但是与java不同的是，java虚拟机通过读取class字节码来加载，但是art则是通过dex字节码来加载。这是一种优化，可以合并多个class文件为一个classes.dex文件。</p>
+<p>android一共有三种类加载器:</p>
+<ul>
+<li><p>BootClassLoader：父类构造器</p>
+</li>
+<li><p>PathClassLoader：一般是加载指定路径/data/app中的apk，也就是安装到手机中的apk。所以一般作为默认的加载器。</p>
+</li>
+<li><p>DexClassLoader：从包含classes.dex的jar或者apk中，加载类的加载器，可用于动态加载。</p>
+</li>
+</ul>
+<p>看PathClassLoader和DexClassLoader源码，都是继承自BaseDexClassLoader。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DexClassLoader</span><span class="params">(String dexPath, String optimizedDirectory,</span></span></span><br><span class="line"><span class="function"><span class="params">      String librarySearchPath, ClassLoader parent)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>(dexPath, <span class="keyword">new</span> File(optimizedDirectory), librarySearchPath, parent);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PathClassLoader</span> <span class="keyword">extends</span> <span class="title">BaseDexClassLoader</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">PathClassLoader</span><span class="params">(String dexPath, ClassLoader parent)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(dexPath, <span class="keyword">null</span>, <span class="keyword">null</span>, parent);  <span class="comment">//见下文</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseDexClassLoader</span> <span class="keyword">extends</span> <span class="title">ClassLoader</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> DexPathList pathList;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">BaseDexClassLoader</span><span class="params">(String dexPath, File optimizedDirectory,</span></span></span><br><span class="line"><span class="function"><span class="params">        String libraryPath, ClassLoader parent)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(parent);  <span class="comment">//见下文</span></span><br><span class="line">        <span class="comment">//收集dex文件和Native动态库【见小节3.2】</span></span><br><span class="line">        <span class="keyword">this</span>.pathList = <span class="keyword">new</span> DexPathList(<span class="keyword">this</span>, dexPath, libraryPath, optimizedDirectory);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以看到PathClassLoader的两个参数都为null，表明只能接受固定的dex文件，而这个文件是只能在安装后出现的。而DexClassLoader中optimizedDirectory，和librarySearchPath都是可以自己定义的，说明我们可以传入一个jar或者apk包，保证解压缩后是一个dex文件就可以操作了。因此，我们通常使用DexClassLoader来进行插件化和热修复。</p>
+<p>可以看到，BaseDexClassLoader有一个相当重要的过程就是初始化DexPathList。初始化DexPathList的过程主要是收集dexElements和nativeLibraryPathElements。一个Classloader可以包含多个dex文件，每个dex文件被封装到一个Element对象。这element对象在初始化和热修复逻辑中是相当重要的。当查找某个类时，会遍历dexElements，如果找到就返回，否则继续遍历。所以当多个dex中有相同的类，只会加载前面的dex中的类。下面是这段逻辑的具体实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Class <span class="title">findClass</span><span class="params">(String name, List&lt;Throwable&gt; suppressed)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (Element element : dexElements) &#123;</span><br><span class="line">        DexFile dex = element.dexFile;</span><br><span class="line">        <span class="keyword">if</span> (dex != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//找到目标类，则直接返回</span></span><br><span class="line">            Class clazz = dex.loadClassBinaryName(name, definingContext, suppressed);</span><br><span class="line">            <span class="keyword">if</span> (clazz != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> clazz;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h3><p>我们先是讲解了Java中类加载的双亲委托机制，然后介绍了Android中的几种ClassLoader，从源码角度介绍了两种ClassLoader加载机制的不同。以后的插件化实践中，我们会经常用到DexClassLoader。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p><a href="https://blog.csdn.net/carson_ho/article/details/73560642" target="_blank" rel="noopener">Android跨进程通信：图文详解 Binder机制 原理</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/35519585" target="_blank" rel="noopener">写给 Android 应用工程师的 Binder 原理剖析</a></p>
+<p><a href="https://juejin.im/post/5a28e7e86fb9a045117105c3" target="_blank" rel="noopener">深入理解Android中的ClassLoader</a></p>
+<p><a href="http://gityuan.com/2017/03/19/android-classloader/" target="_blank" rel="noopener">Android类加载器ClassLoader</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/插件化/" rel="tag"># 插件化</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/05/一篇文章深入gradle（上篇）:依赖机制/" rel="next" title="一篇文章深入gradle（上篇）:依赖机制">
+                <i class="fa fa-chevron-left"></i> 一篇文章深入gradle（上篇）:依赖机制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/14/Android插件化系列二: 资源相关，App打包/" rel="prev" title="Android插件化系列二：资源与打包流程">
+                Android插件化系列二：资源与打包流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">oubindo</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Android插件化系列一-开篇前言，Binder机制，ClassLoader"><span class="nav-number">1.</span> <span class="nav-text">Android插件化系列一: 开篇前言，Binder机制，ClassLoader</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#系列前言"><span class="nav-number">1.1.</span> <span class="nav-text">系列前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一-Binder机制"><span class="nav-number">1.2.</span> <span class="nav-text">一. Binder机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么需要Binder"><span class="nav-number">1.2.1.</span> <span class="nav-text">为什么需要Binder</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Binder模型"><span class="nav-number">1.2.2.</span> <span class="nav-text">Binder模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Binder与插件化"><span class="nav-number">1.2.3.</span> <span class="nav-text">Binder与插件化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">1.2.4.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-ClassLoader"><span class="nav-number">1.3.</span> <span class="nav-text">二. ClassLoader</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#双亲委托模型"><span class="nav-number">1.3.1.</span> <span class="nav-text">双亲委托模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Android中的ClassLoader"><span class="nav-number">1.3.2.</span> <span class="nav-text">Android中的ClassLoader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结-1"><span class="nav-number">1.3.3.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考资料"><span class="nav-number">1.3.4.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">oubindo</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
