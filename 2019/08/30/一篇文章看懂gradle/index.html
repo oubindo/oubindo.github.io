@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="gradle," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一篇文章基本看懂gradleHi，大家好啊。笨鸟之旅已经很久都没有更新了，感谢大家这么久以来还把我留在列表里。这么久以来不更新的原因主要是我本人进入了一个迷茫期，对于工作和生活都提不起兴致来。加上每天工作的时间太长，一回家就瘫在床上了。这也导致了很久之前的文章计划一直都搁浅，做的计划一次一次的delay。于是生活进入了一个负循环。但是生活还是要向上看，还是要坚持去努力做点事情，努力去变得更好，所以">
+<meta name="keywords" content="gradle">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一篇文章基本看懂gradle">
+<meta property="og:url" content="http://yoursite.com/2019/08/30/一篇文章看懂gradle/index.html">
+<meta property="og:site_name" content="Coding and Learning">
+<meta property="og:description" content="一篇文章基本看懂gradleHi，大家好啊。笨鸟之旅已经很久都没有更新了，感谢大家这么久以来还把我留在列表里。这么久以来不更新的原因主要是我本人进入了一个迷茫期，对于工作和生活都提不起兴致来。加上每天工作的时间太长，一回家就瘫在床上了。这也导致了很久之前的文章计划一直都搁浅，做的计划一次一次的delay。于是生活进入了一个负循环。但是生活还是要向上看，还是要坚持去努力做点事情，努力去变得更好，所以">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190829093346.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190830093028.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/006tNc79ly1g2ynzenpu3j30ji0cijsn.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/006tNc79ly1g2zg1osecqj30rs0dtwfo.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/006tNc79ly1g2ynlq52cbj30gb0xxjv3.jpg">
+<meta property="og:updated_time" content="2019-09-15T02:28:24.742Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一篇文章基本看懂gradle">
+<meta name="twitter:description" content="一篇文章基本看懂gradleHi，大家好啊。笨鸟之旅已经很久都没有更新了，感谢大家这么久以来还把我留在列表里。这么久以来不更新的原因主要是我本人进入了一个迷茫期，对于工作和生活都提不起兴致来。加上每天工作的时间太长，一回家就瘫在床上了。这也导致了很久之前的文章计划一直都搁浅，做的计划一次一次的delay。于是生活进入了一个负循环。但是生活还是要向上看，还是要坚持去努力做点事情，努力去变得更好，所以">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190829093346.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/08/30/一篇文章看懂gradle/"/>
+
+
+
+
+
+  <title>一篇文章基本看懂gradle | Coding and Learning</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Coding and Learning</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">oubindo的技术与生活博客</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/30/一篇文章看懂gradle/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一篇文章基本看懂gradle</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-30T10:09:44+08:00">
+                2019-08-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="一篇文章基本看懂gradle"><a href="#一篇文章基本看懂gradle" class="headerlink" title="一篇文章基本看懂gradle"></a>一篇文章基本看懂gradle</h1><p>Hi，大家好啊。笨鸟之旅已经很久都没有更新了，感谢大家这么久以来还把我留在列表里。这么久以来不更新的原因主要是我本人进入了一个迷茫期，对于工作和生活都提不起兴致来。加上每天工作的时间太长，一回家就瘫在床上了。这也导致了很久之前的文章计划一直都搁浅，做的计划一次一次的delay。于是生活进入了一个负循环。但是生活还是要向上看，还是要坚持去努力做点事情，努力去变得更好，所以我又来了。以后一定会努力的学习，努力的发文。</p>
+<p>这段时间来学习了gradle，也体会到了gradle从初步理解到基本熟悉，再到深入源码这样一个过程中的一些曲折。这篇文章主要是gradle的基础知识篇。看完这篇文章，你可以：</p>
+<ul>
+<li>清楚gradle的定义和解决的痛点</li>
+<li>基本理解Android gradle的运作机制</li>
+<li>基本理解gradle的大部分语法</li>
+<li>学会基本的groovy开发</li>
+</ul>
+<p>如果你想关注gradle更深入的一些知识，请继续关注后续gradle文章。</p>
+<h2 id="what-is-gradle"><a href="#what-is-gradle" class="headerlink" title="what is gradle?"></a>what is gradle?</h2><p>先来看一段维基百科上对于gradle的解释。</p>
+<blockquote>
+<p>Gradle是一个基于Apache Ant和Apache Maven概念的项目自动化构建工具。它使用一种基于Groovy的特定领域语言来声明项目设置，而不是传统的XML。当前其支持的语言限于Java、Groovy和Scala，计划未来将支持更多的语言。</p>
+</blockquote>
+<p>可能刚接触gradle的同学都不是很了解gradle的这个定义。可能就只会跟着网上的教程copy一点配置，但是不理解这些配置背后的原理。那么怎么来理解这句话呢，我们可以把握到三个要点：首先，它是一种<code>构建工具</code>，其次，gradle是<code>基于maven概念</code>的，最后，使用<code>groovy</code>这种语言来声明。要理解这几句话，我们先考虑几个场景。</p>
+<p>1.<code>渠道管理</code>：国内手机市场有大大小小数十个，大的手机厂商也有五六个，每个厂商可能又有不同的定制rom。如果我们要为不同市场和厂商进行适配，那就需要写这样的代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if(isHuawei) &#123;</span><br><span class="line">    // dosomething</span><br><span class="line">&#125; else if(isOppo) &#123;</span><br><span class="line">    // dosomething</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样的话，繁琐不说，对单个手机而言大量的无用代码被编译进apk中，包体积和运行速度都会受影响。为了解决这个问题，gradle引进了productFlavor和buildType的能力，能根据情况来进行打包。所以说他是一个<code>自动化构建工具</code>。可以看<a href="https://developer.android.com/studio/build?hl=zh-cn" target="_blank" rel="noopener">官方文档</a></p>
+<p>2.<code>依赖管理</code>：我们通常会在项目中引入各种三方库进行代码复用。比如，直接手动把jar或者aar copy到项目中，然后添加依赖。这种方法缺陷很明显，首先配置和删除流程很繁琐，其次，同一个jar可能会被多个项目所引用，导致不知不觉就copy了多个jar。最后，版本管理艰难。为了解决这个问题，gradle是基于maven仓库，配置和删除的时候仅需要对仓库的坐标进行操作，所有的库都会被gradle统一管理，大多数情况下每个库只会有一个版本存在于项目中，并且每个库只会有一个副本存在于项目中。</p>
+<p>所以gradle其实不是什么神秘的东西，只是基于某种语言(groovy, java, kotlin)的一种构建工具而已。只要我们大概掌握了基本的用法和他的内部原理，日常工作中就会知道自己网上搜到的命令是什么意思啦。skr~</p>
+<h2 id="小试牛刀-android中的gradle"><a href="#小试牛刀-android中的gradle" class="headerlink" title="小试牛刀-android中的gradle"></a>小试牛刀-android中的gradle</h2><p><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190829093346.png" alt="">  </p>
+<p>咱们先看看日常工作中经常用到的几个gradle文件。可以看到主要有有三个文件：<br>1.build.gradle<br>根文件下放的通常放的是针对整个工程的通用配置，每个module下面的build.gradle文件是针对每个module自身的配置。<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    ext.kotlin_version = <span class="string">'1.2.71'</span></span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath <span class="string">'com.android.tools.build:gradle:3.2.1'</span></span><br><span class="line">        classpath <span class="string">"org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这是一个默认的配置，我们可以看到有buildscript，allprojects，repositories，dependencies几个配置项，这些配置项是干嘛的呢，很多的同学在刚学gradle的时候都是一脸懵逼的。这些其实是gradle的一种特定的语法，我们称之为DSL(domain-specific language)。可以参考<a href="https://docs.gradle.org/current/dsl/index.html" target="_blank" rel="noopener">官网</a>。这里可以看到allprojects代理的是每个project，可以理解成我们的每个module，也就是对我们所写的每个module的配置。buildscript主要配置的是打包相关的东西，比如gradle版本，gradle插件版本等，这些都是针对构建工具自己的配置。repositories，dependencies是三方库的仓库和坐标。所以根目录的build.gradle相当于是整体的配置。</p>
+<p>而module下的build.gradle主要是android，dependencies等配置项。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;com.android.application&apos;</span><br><span class="line"></span><br><span class="line">android&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line">dependencies&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可能有些同学会感到奇怪，为啥我们在<a href="https://docs.gradle.org/current/dsl/index.html" target="_blank" rel="noopener">官网</a>没有看到android这个配置项呢？这个主要是因为它并不是gradle的DSL，某种意义上说应该算是android特有的，是通过Android的插件’com.android.application’带进来的配置项。我们如果把第一行删掉，就会发现android{}这个配置项找不到了。</p>
+<p>所以，我们可以发现，build.gradle里面的配置项，要么是gradle自带的，要么是各种插件定义的。有不认识的配置项，就去官网查询一下就好了，授人以鱼不如授人以渔嘛。我们后面也会讲解到引进插件的方式和怎么定义插件和配置项。</p>
+<p>2.settings.gradle<br>这个文件主要是决定每个module是否参与构建。我们可以这样去理解，settings.gradle相当于是每个module的开关，关上了这个module就不能使用了，别的依赖到它的module也都会出问题。</p>
+<p>3.gradle.properties<br>这里主要是增加和修改一些可以在构建过程中直接使用的参数。不只是可以添加自定义参数，还可以修改系统的参数哦~</p>
+<p>总结一下，就是说根目录下有一个build.gradle，处理整个工程的配置项，根目录下的settings.gradle配置整个工程中参与构建的module，每个module自己有一个build.gradle，处理自己模块的配置。这就是android构建的一个大概情况。当然，看了这一部分肯定还是不懂怎么去写的，接下来我们走进代码层面。</p>
+<h2 id="groovy-学gradle的密钥"><a href="#groovy-学gradle的密钥" class="headerlink" title="groovy-学gradle的密钥"></a>groovy-学gradle的密钥</h2><p>gradle可以使用groovy，kotlin，java等语言进行书写，但是groovy相对来说是目前比较流行的gradle配置方式，下面我们讲解一点groovy基础。不讲太多，够用就行。</p>
+<p>1.字符串</p>
+<p>groovy的字符串分为两种java.lang.String和groovy.lang.GString。其中单引号和三引号是String类型的。双引号是GString类型的。支持占位插值操作。和kotlin一样，groovy的插值操作也是用<code>${}</code>或者<code>$</code>来标示，<code>${}</code>用于一般替代字串或者表达式，<code>$</code>主要用于A.B的形式中。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> number = <span class="number">1</span> </span><br><span class="line"><span class="keyword">def</span> eagerGString = <span class="string">"value == $&#123;number&#125;"</span></span><br><span class="line"><span class="keyword">def</span> lazyGString = <span class="string">"value == $&#123; -&gt; number &#125;"</span></span><br><span class="line"></span><br><span class="line">println eagerGString</span><br><span class="line">println lazyGString</span><br><span class="line"></span><br><span class="line">number = <span class="number">2</span> </span><br><span class="line">println eagerGString </span><br><span class="line">println lazyGString</span><br></pre></td></tr></table></figure>
+<p>2.字符Character</p>
+<p>Groovy没有明确的Character。但是可以强行声明。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> c1 = <span class="string">'A'</span> </span><br><span class="line"><span class="keyword">assert</span> c1 <span class="keyword">instanceof</span> Character</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> c2 = <span class="string">'B'</span> <span class="keyword">as</span> <span class="keyword">char</span> </span><br><span class="line"><span class="keyword">assert</span> c2 <span class="keyword">instanceof</span> Character</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> c3 = (<span class="keyword">char</span>)<span class="string">'C'</span> </span><br><span class="line"><span class="keyword">assert</span> c3 <span class="keyword">instanceof</span> Character</span><br></pre></td></tr></table></figure>
+<p>4.List</p>
+<p>Groovy的列表和python的很像。支持动态扩展，支持放置多种数据。使用方法支持def和直接定义。还可以像python那样索引</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//List中存储任意类型</span></span><br><span class="line"><span class="keyword">def</span> heterogeneous = [<span class="number">1</span>, <span class="string">"a"</span>, <span class="literal">true</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断List默认类型</span></span><br><span class="line"><span class="keyword">def</span> arrayList = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]</span><br><span class="line"><span class="keyword">assert</span> arrayList <span class="keyword">instanceof</span> java.util.ArrayList</span><br><span class="line"></span><br><span class="line"><span class="comment">//使用as强转类型</span></span><br><span class="line"><span class="keyword">def</span> linkedList = [<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>] <span class="keyword">as</span> LinkedList    </span><br><span class="line"><span class="keyword">assert</span> linkedList <span class="keyword">instanceof</span> java.util.LinkedList</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义指定类型List</span></span><br><span class="line">LinkedList otherLinked = [<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]          </span><br><span class="line"><span class="keyword">assert</span> otherLinked <span class="keyword">instanceof</span> java.util.LinkedList</span><br><span class="line"></span><br><span class="line"><span class="comment">// 像python一样索引</span></span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">1</span>] == <span class="string">'b'</span></span><br><span class="line"><span class="comment">//负数下标则从右向左index</span></span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">-1</span>] == <span class="string">'d'</span>    </span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">-2</span>] == <span class="string">'c'</span></span><br><span class="line"><span class="comment">//指定item赋值判断</span></span><br><span class="line">letters[<span class="number">2</span>] = <span class="string">'C'</span>             </span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">2</span>] == <span class="string">'C'</span></span><br><span class="line"><span class="comment">//给List追加item</span></span><br><span class="line">letters &lt;&lt; <span class="string">'e'</span>               </span><br><span class="line"><span class="keyword">assert</span> letters[ <span class="number">4</span>] == <span class="string">'e'</span></span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">-1</span>] == <span class="string">'e'</span></span><br><span class="line"><span class="comment">//获取一段List子集</span></span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">1</span>, <span class="number">3</span>] == [<span class="string">'b'</span>, <span class="string">'d'</span>]         </span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">2.</span><span class="number">.4</span>] == [<span class="string">'C'</span>, <span class="string">'d'</span>, <span class="string">'e'</span>]</span><br></pre></td></tr></table></figure>
+<p>5.Map</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//定义一个Map</span></span><br><span class="line"><span class="keyword">def</span> colors = [<span class="string">red:</span> <span class="string">'#FF0000'</span>, <span class="string">green:</span> <span class="string">'#00FF00'</span>, <span class="string">blue:</span> <span class="string">'#0000FF'</span>]   </span><br><span class="line"><span class="comment">//获取一些指定key的value进行判断操作</span></span><br><span class="line"><span class="keyword">assert</span> colors[<span class="string">'red'</span>] == <span class="string">'#FF0000'</span>    </span><br><span class="line"><span class="keyword">assert</span> colors.green  == <span class="string">'#00FF00'</span></span><br></pre></td></tr></table></figure>
+<p>6.运算符</p>
+<ul>
+<li>**： 次方运算符。</li>
+<li>?.：安全占位符。和kotlin一样避免空指针异常。</li>
+<li>.@：直接域访问操作符。因为Groovy自动支持属性getter方法，但有时候我们有一个自己写的特殊getter方法，当不想调用这个特殊的getter方法则可以用直接域访问操作符。这点跟kotlin的</li>
+<li>.&amp;：方法指针操作符，因为闭包可以被作为一个方法的参数，如果想让一个方法作为另一个方法的参数则可以将一个方法当成一个闭包作为另一个方法的参数。</li>
+<li>?:：二目运算符。与kotlin中的类似。</li>
+<li><code>*.</code>展开运算符，一个集合使用展开运算符可以得到一个元素为原集合各个元素执行后面指定方法所得值的集合。</li>
+</ul>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cars = [</span><br><span class="line">    <span class="keyword">new</span> Car(<span class="string">make:</span> <span class="string">'Peugeot'</span>, <span class="string">model:</span> <span class="string">'508'</span>),</span><br><span class="line">   <span class="literal">null</span>,                                              </span><br><span class="line">   <span class="keyword">new</span> Car(<span class="string">make:</span> <span class="string">'Renault'</span>, <span class="string">model:</span> <span class="string">'Clio'</span>)]</span><br><span class="line"><span class="keyword">assert</span> cars*.make == [<span class="string">'Peugeot'</span>, <span class="literal">null</span>, <span class="string">'Renault'</span>]     </span><br><span class="line"><span class="keyword">assert</span> <span class="literal">null</span>*.make == <span class="literal">null</span></span><br></pre></td></tr></table></figure>
+<p>7.闭包<br>groovy里比较重要的是闭包的概念。官方定义是“Groovy中的闭包是一个开放，匿名的代码块，可以接受参数，返回值并分配给变量”。<br>其实闭包跟kotlin的lambda函数很像，都是先定义后执行。但是又有一些细微的区别。接下来我们细讲讲gradle的闭包。</p>
+<p>闭包是可以用作方法参数的代码块，Groovy的闭包更象是一个代码块或者方法指针，代码在某处被定义然后在其后的调用处执行。一个闭包实际上就是一个Closure类型的实例。写法和kotlin的lambda函数很像。</p>
+<p>我们常见的闭包是这样的<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//最基本的闭包</span></span><br><span class="line">&#123; item++ &#125;                                          </span><br><span class="line"><span class="comment">//使用-&gt;将参数与代码分离</span></span><br><span class="line">&#123;item -&gt; item++ &#125;                                       </span><br><span class="line"><span class="comment">//使用隐含参数it</span></span><br><span class="line">&#123; println it &#125;                               </span><br><span class="line"><span class="comment">//使用显示的名为参数</span></span><br><span class="line">&#123; name -&gt; println name &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用方法</span></span><br><span class="line">a.call()</span><br><span class="line">a()</span><br><span class="line"></span><br><span class="line"><span class="comment">// Groovy的闭包支持最后一个参数为不定长可变长度的参数。</span></span><br><span class="line"><span class="keyword">def</span> multiConcat = &#123; <span class="keyword">int</span> n, String... args -&gt;                </span><br><span class="line">    args.join(<span class="string">''</span>)*n</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>大家要注意，如果我们单纯的只是写成 a = { item++ }, 这只是定义了一个闭包，是不能运行的。必须调用a.call()才能运行出来。所以大家可以理解了，闭包就是一段代码块而已。当我们有需要的时候，可以去运行它，这么一想是不是和lambda函数很像？</p>
+<p>如果你看了<a href="https://docs.gradle.org/current/dsl/index.html" target="_blank" rel="noopener">官网</a>，你会发现有一些这样的说法，</p>
+<p><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190830093028.png" alt=""></p>
+<p>什么叫做delegate？这里涉及到闭包内部的三种对象。</p>
+<ul>
+<li>this 对应于定义闭包的那个类，如果在内部类中定义，指向的是内部类</li>
+<li>owenr 对应于定义闭包的那个类或者闭包，如果在闭包中定义，对应闭包，否则同this一致</li>
+<li>delegate 默认是和owner一致，或者自定义delegate指向</li>
+</ul>
+<p>this和owner都比较好理解。我们可以用闭包的getxxx方法获取<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> thisObject = closure.getThisObject()</span><br><span class="line"><span class="keyword">def</span> ownerObject = closure.getOwner()</span><br><span class="line"><span class="keyword">def</span> delegate = closure.getDelegate()</span><br></pre></td></tr></table></figure></p>
+<p>重头戏还是delegate这个对象。闭包可以设置delegate对象，<strong>设置delegate的意义就是将闭包和一个具体的对象关联起来</strong>。<br>我们先来看个例子，这里以自定义android闭包为例。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion 25</span><br><span class="line">    buildToolsVersion &quot;25.0.2&quot;</span><br><span class="line"></span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        minSdkVersion 15</span><br><span class="line">        targetSdkVersion 25</span><br><span class="line">        versionCode 1</span><br><span class="line">        versionName &quot;1.0&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个闭包对应的实体类是两个。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"># Android.groovy</span><br><span class="line">class Android &#123;</span><br><span class="line">    private int mCompileSdkVersion</span><br><span class="line">    private String mBuildToolsVersion</span><br><span class="line">    private ProductFlavor mProductFlavor</span><br><span class="line"></span><br><span class="line">    Android() &#123;</span><br><span class="line">        this.mProductFlavor = new ProductFlavor()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void compileSdkVersion(int compileSdkVersion) &#123;</span><br><span class="line">        this.mCompileSdkVersion = compileSdkVersion</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void buildToolsVersion(String buildToolsVersion) &#123;</span><br><span class="line">        this.mBuildToolsVersion = buildToolsVersion</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void defaultConfig(Closure closure) &#123;</span><br><span class="line">        closure.setDelegate(mProductFlavor)</span><br><span class="line">        closure.setResolveStrategy(Closure.DELEGATE_FIRST)</span><br><span class="line">        closure.call()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    @Override</span><br><span class="line">     String toString() &#123;</span><br><span class="line">        return &quot;Android&#123;&quot; +</span><br><span class="line">                &quot;mCompileSdkVersion=&quot; + mCompileSdkVersion +</span><br><span class="line">                &quot;, mBuildToolsVersion=&apos;&quot; + mBuildToolsVersion + &apos;\&apos;&apos; +</span><br><span class="line">                &quot;, mProductFlavor=&quot; + mProductFlavor +</span><br><span class="line">                &apos;&#125;&apos;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># ProductFlavor.groovy</span><br><span class="line">class ProductFlavor &#123;</span><br><span class="line">    private int mVersionCode</span><br><span class="line">    private String mVersionName</span><br><span class="line">    private int mMinSdkVersion</span><br><span class="line">    private int mTargetSdkVersion</span><br><span class="line"></span><br><span class="line">    def versionCode(int versionCode) &#123;</span><br><span class="line">        mVersionCode = versionCode</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    def versionName(String versionName) &#123;</span><br><span class="line">        mVersionName = versionName</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    def minSdkVersion(int minSdkVersion) &#123;</span><br><span class="line">        mMinSdkVersion = minSdkVersion</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    def targetSdkVersion(int targetSdkVersion) &#123;</span><br><span class="line">        mTargetSdkVersion = targetSdkVersion</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    String toString() &#123;</span><br><span class="line">        return &quot;ProductFlavor&#123;&quot; +</span><br><span class="line">                &quot;mVersionCode=&quot; + mVersionCode +</span><br><span class="line">                &quot;, mVersionName=&apos;&quot; + mVersionName + &apos;\&apos;&apos; +</span><br><span class="line">                &quot;, mMinSdkVersion=&quot; + mMinSdkVersion +</span><br><span class="line">                &quot;, mTargetSdkVersion=&quot; + mTargetSdkVersion +</span><br><span class="line">                &apos;&#125;&apos;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后定义的时候就写成<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">//闭包定义</span><br><span class="line">def android = &#123;</span><br><span class="line">        compileSdkVersion 25</span><br><span class="line">        buildToolsVersion &quot;25.0.2&quot;</span><br><span class="line">        defaultConfig &#123;</span><br><span class="line">            minSdkVersion 15</span><br><span class="line">            targetSdkVersion 25</span><br><span class="line">            versionCode 1</span><br><span class="line">            versionName &quot;1.0&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">//调用</span><br><span class="line">Android bean = new Android()</span><br><span class="line">android.delegate = bean</span><br><span class="line">android.call()</span><br><span class="line">println bean.toString()</span><br><span class="line"></span><br><span class="line">//打印结果</span><br><span class="line">Android&#123;mCompileSdkVersion=25, mBuildToolsVersion=&apos;25.0.2&apos;, mProductFlavor=ProductFlavor&#123;mVersionCode=1, mVersionName=&apos;1.0&apos;, mMinSdkVersion=15, mTargetSdkVersion=25&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样就能将闭包中声明的值，赋给两个对象Android和ProductFlavor来处理了。</p>
+<p>上面官网的图里，说ScriptHandler被设置成buildscript的delegate。意思就是buildscript定义的参数被ScriptHandler拿来使用了。大家有兴趣的可以去看看ScriptHandler的源码~</p>
+<h2 id="Project与Task-gradle构建体系"><a href="#Project与Task-gradle构建体系" class="headerlink" title="Project与Task-gradle构建体系"></a>Project与Task-gradle构建体系</h2><p>上面我们讲完了基本的用法，大家可能懂gradle的配置和写法了。但是可能还是不懂gradle的构建体系到底是怎么样的。这里我们就要深入进gradle的构建体系Project和Task了。下面的东西看着就要动动脑筋了。</p>
+<p>1.Task<br>Task是gradle脚本中的最小可执行单元。类图如下：<br><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/006tNc79ly1g2ynzenpu3j30ji0cijsn.jpg" alt=""></p>
+<p>值得注意的是因为Gradle构建脚本默认的名字是build.gradle，当在shell中执行gradle命令时，Gradle会去当前目录下寻找名字是build.gradle的文件。<strong>所以只有定义在build.gradle中的Task才是有效的。</strong></p>
+<p>可以通过三种方式来声明task。我们可以根据自己的项目需要去定义Task。比如自定义task接管gradle的编译过程<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">task myTask2 &lt;&lt; &#123;</span><br><span class="line">    println <span class="string">"doLast in task2"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//采用 Project.task(String name) 方法来创建</span></span><br><span class="line">project.task(<span class="string">"myTask3"</span>).doLast &#123;</span><br><span class="line">    println <span class="string">"doLast in task3"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//采用 TaskContainer.create(String name) 方法来创建</span></span><br><span class="line">project.tasks.create(<span class="string">"myTask4"</span>).doLast &#123;</span><br><span class="line">    println <span class="string">"doLast in task4"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>TaskContianer 是用来管理所有的 Task 实例集合的，可以通过 Project.getTasks() 来获取 TaskContainer 实例。<br>常见接口：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">findByPath(path: String): Task</span><br><span class="line">getByPath(path: String): Task</span><br><span class="line">getByName(name: String): Task</span><br><span class="line">withType(type: Class): TaskCollection</span><br><span class="line">matching(condition: Closure): TaskCollection</span><br><span class="line"></span><br><span class="line"><span class="comment">//创建task</span></span><br><span class="line">create(name: String): Task</span><br><span class="line">create(name: String, configure: Closure): Task </span><br><span class="line">create(name: String, type: Class): Task</span><br><span class="line">create(options: Map&lt;String, ?&gt;): Task</span><br><span class="line">create(options: Map&lt;String, ?&gt;, configure: Closure): Task</span><br><span class="line"></span><br><span class="line"><span class="comment">//当task被加入到TaskContainer时的监听</span></span><br><span class="line">whenTaskAdded(action: Closure)</span><br></pre></td></tr></table></figure></p>
+<p>Gradle支持增量编译。了解过编译profile文件的朋友都知道，里面有大量的task都是<code>up-to-date</code>。那么这种up-to-date是什么意思呢。<code>Gradle的Task会把每次运行的结果缓存下来，当下次运行时，会检查一个task的输入输出有没有变更。如果没有变更就是up-to-date，跳过编译。</code></p>
+<p><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/006tNc79ly1g2zg1osecqj30rs0dtwfo.jpg" alt=""></p>
+<p>2.Project<br>先从Project对象讲起，Project是与Gradle交互的主接口。android开发中最为我们所熟悉的就是build.gradle文件，这个文件与Project是一对一的关系，build.gradle文件是project对象的委托，脚本中的配置都是对应着Project的Api。Gradle构建进程启动的时候会根据build.gradle去实例化Project类。也就是说，构建的时候，每个build.gradle文件会生成一个Project对象，这个对象负责当前module的构建。</p>
+<p>Project本质上是包含多个Task的容器，所有的Task存在TaskContainer中。我们从名字可以看出<br><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/006tNc79ly1g2ynlq52cbj30gb0xxjv3.jpg" alt=""></p>
+<p>可以看到dependencies, configuration, allprojects, subprojects, beforeEvaluate, afterEvaluate这些都是我们常见的配置项，在build.gradle文件中接收一个闭包Closure。</p>
+<p>好了，现在我们已经聊了build.gradle了，但是大家都知道，我们项目中还有一个settings.gradle呢，这个是拿来干嘛的呢？这就要说到Project的<code>Lifecycle</code>了，也就是Gradle构建Project的步骤，看官网原文：</p>
+<ul>
+<li>Create a Settings instance for the build.</li>
+<li>Evaluate the settings.gradle script, if present, against the Settings object to configure it.</li>
+<li>Use the configured Settings object to create the hierarchy of Project instances.</li>
+<li>Finally, evaluate each Project by executing its build.gradle file, if present, against the project. The projects are evaluated in breadth-wise order(宽度搜索), such that a project is evaluated before its child projects. This order can be overridden by calling <code>Project.evaluationDependsOnChildren()</code> or by adding an explicit evaluation dependency using <code>Project.evaluationDependsOn(java.lang.String)</code>.</li>
+</ul>
+<p>也就是说，Project对象依赖Settings对象的构建。我们常在settings.gradle文件中配置需要引入的module，就是这个原因。</p>
+<p>3.Property<br>看完了build.gradle和settings.gradle，接下来我们讲讲gradle.properties。这个文件存放的键值对形式的属性，这些属性能被项目中的gradle脚本使用ext.xxx所访问。</p>
+<p>我们也可以使用Properties类来动态创建属性文件。如：<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> defaultProps = <span class="keyword">new</span> Properties()</span><br><span class="line">defaultProps.setProperty(<span class="string">"debuggable"</span>, <span class="string">'true'</span>)</span><br><span class="line">defaultProps.setProperty(<span class="string">"groupId"</span>, GROUP)</span><br></pre></td></tr></table></figure></p>
+<p>并且属性可以继承，在一个项目中定义的属性可以自动被子项目继承。所以在哪个子项目都可以使用project.ext.xxx访问。不同子项目间采用通用的配置插件来配置<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply <span class="string">from:</span> rootProject.file(<span class="string">'library.gradle'</span>)</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过上面的学习，大家应该已经了解了gradle的基本配置，写法和比较浅显的内部原理了。因为篇幅原因，深入的内容我们放在下一篇。敬请期待《一篇文章深入gradle》</p>
+<p>我是Android笨鸟之旅，一个陪着你慢慢变强的公众号。</p>
+<p>参考：<br><a href="https://docs.gradle.org/current/dsl/index.html" target="_blank" rel="noopener">官网</a><br><a href="https://www.jianshu.com/p/6dc2074480b8" target="_blank" rel="noopener">[Android Gradle] 搞定Groovy闭包这一篇就够了</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/gradle/" rel="tag"># gradle</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/15/从0到1完成一个健身App/路由框架之路/" rel="next" title="">
+                <i class="fa fa-chevron-left"></i> 
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/05/一篇文章深入gradle/" rel="prev" title="一篇文章深入gradle（上篇）:依赖机制">
+                一篇文章深入gradle（上篇）:依赖机制 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">oubindo</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">categories</span>
+                
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一篇文章基本看懂gradle"><span class="nav-number">1.</span> <span class="nav-text">一篇文章基本看懂gradle</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#what-is-gradle"><span class="nav-number">1.1.</span> <span class="nav-text">what is gradle?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小试牛刀-android中的gradle"><span class="nav-number">1.2.</span> <span class="nav-text">小试牛刀-android中的gradle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#groovy-学gradle的密钥"><span class="nav-number">1.3.</span> <span class="nav-text">groovy-学gradle的密钥</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Project与Task-gradle构建体系"><span class="nav-number">1.4.</span> <span class="nav-text">Project与Task-gradle构建体系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">1.5.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">oubindo</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

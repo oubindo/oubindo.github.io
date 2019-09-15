@@ -230,6 +230,600 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/09/我的gradle学习之路/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/09/我的gradle学习之路/" itemprop="url">gradle学习</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-09T17:08:29+08:00">
+                2018-08-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="gradle学习之路"><a href="#gradle学习之路" class="headerlink" title="gradle学习之路"></a>gradle学习之路</h2><p>1.gradle init生成gradle需要的文件。</p>
+<p>2.gradle task –scan 可以生成报表，方便我们查看和分析什么耗时</p>
+<p>3.build.gradle 里面写的是项目多模块可以同时使用的配置。当我们在这里加上<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        jcenter() </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>的时候，配置就对全局有效。也可以改成subprojects。而且这两个配置可以在根项目里使用很多次。</p>
+<p>4.生成library： gradle init –type groovy-library/java-library/java-application</p>
+<p>5.多个模块的通用设置放在根目录的build.gradle下面。可以用configure语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">configure(subprojects.findAll &#123; it.name == &apos;greeter&apos; || it.name == &apos;greeting-library&apos; &#125;) &#123; </span><br><span class="line"></span><br><span class="line">    apply plugin: &apos;groovy&apos;</span><br><span class="line"></span><br><span class="line">    dependencies &#123;</span><br><span class="line">        testCompile &apos;org.spockframework:spock-core:1.0-groovy-2.4&apos;, &#123;</span><br><span class="line">            exclude module: &apos;groovy-all&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>6.只在根目录，进行其他subproject的编译<br>./gradlew :{subproject}/{task}</p>
+<p>7.在Java library中进行build，可以在build/libs目录下找到jar。或者也可以使用./gradlew jar命令打jar包</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/10/美国大学Online课程推荐及个人评测/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/10/美国大学Online课程推荐及个人评测/" itemprop="url">美国大学Online课程及个人评测</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-10T13:28:32+08:00">
+                2018-05-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="美国大学Online课程及个人评测"><a href="#美国大学Online课程及个人评测" class="headerlink" title="美国大学Online课程及个人评测"></a>美国大学Online课程及个人评测</h1><h2 id="已刷"><a href="#已刷" class="headerlink" title="已刷"></a>已刷</h2><p>1.Coursera MachineLearning：非常不错的机器学习入门课程，讲解细致，测验和program exercise都是很有效的补充学习资料。</p>
+<p>2.Stanford MachineLearning：也是Ng的课程，但是这课程相对上门更难一点，有大量的数学证明，对于想要知根知底的学生来说是一个不错的补充学习资料。我只看了前10个讲座，后面的没看了。</p>
+<h2 id="待刷"><a href="#待刷" class="headerlink" title="待刷"></a>待刷</h2><p>1.Coursera Algorithm II：</p>
+<p>2.Coursera DeepLearning：</p>
+<p>3.<a href="https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-042j-mathematics-for-computer-science-fall-2010/index.htm" target="_blank" rel="noopener">MIT math for computer sciense</a> 这门课大多是离散数学的东西，可以等有空的时候再看，优先级低一些。</p>
+<h2 id="外国公开课程地址"><a href="#外国公开课程地址" class="headerlink" title="外国公开课程地址"></a>外国公开课程地址</h2><p>1.<a href="https://ocw.mit.edu/courses/" target="_blank" rel="noopener">MIT open courses</a></p>
+<p>2.<a href="https://www.cs.washington.edu/education/courses" target="_blank" rel="noopener">华盛顿大学 open courses </a><br>部分课程有视频在youtube上，很多的课程，几乎涵盖了所有课题。可以作为我以后刷课的主力。</p>
+<p>3.直接搜课程英文名，然后看别人的推荐</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/10/kotlin深入学习系列(二)：类与对象篇/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/10/kotlin深入学习系列(二)：类与对象篇/" itemprop="url">Kotlin深入学习系列(二):OOP篇</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-10T13:38:32+08:00">
+                2018-04-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kotlin/" itemprop="url" rel="index">
+                    <span itemprop="name">Kotlin</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="类与对象"><a href="#类与对象" class="headerlink" title="类与对象"></a>类与对象</h1><h2 id="一-类"><a href="#一-类" class="headerlink" title="一.类"></a>一.类</h2><h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><p>在 Kotlin 中的一个类可以有一个主构造函数和一个或多个次构造函数。主构造函数是类头的一部分：它跟在类名（和可选的类型参数）后。其中由于主构造函数内不能写代码，主要的初始化代码需要在 init{} 中书写。在实例初始化期间，初始化块按照它们出现在类体中的顺序执行，与属性初始化器交织在一起。也就是说这里的<strong>初始化块init其实就是被当成了属性初始化</strong>。主构造函数中的参数默认为类参数使用。</p>
+<p>次构造函数可以通过constructor(param)来定义，<strong>所有的构造函数都必须委托给主构造函数，可以直接委托或者通过别的次构造函数简洁委托。</strong> 委托方法是在constructor后面加个this()。</p>
+<p>但是这里又有一个坑，次构造函数不能使用val或者var！例子如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">class Pair&lt;K, V&gt;(val first: K, val second: V) &#123;</span><br><span class="line"></span><br><span class="line">    init&#123;</span><br><span class="line">        println(<span class="string">"init"</span>)</span><br><span class="line">        println(first)</span><br><span class="line">        println(second)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    constructor(val first: K): <span class="keyword">this</span>(first, <span class="number">0</span>)&#123;    <span class="comment">// 这里的val报错。</span></span><br><span class="line">        println(<span class="string">"constructor"</span>)</span><br><span class="line">        println(first)</span><br><span class="line">        println(second)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h3><p>Kotlin所有类都有一个超类Any。声明类时如果使用了open来修饰，那就可以被继承，否则默认不允许继承。</p>
+<p>继承的时候如果子类有主构造函数，那么必须用父类的主构造函数参数初始化。否则必须有次构造函数调用super来调用父类的构造函数。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class HeritLearning: ClassLearning&#123;</span><br><span class="line">    constructor(name: String) : <span class="keyword">super</span>(name)&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或者</span></span><br><span class="line">class HeritLearning(name: String) : ClassLearning(name)&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果一个方法同时和多个超类的相同，那就在调用父类方法的时候使用super&lt;父类&gt;.func()来区分父类。</p>
+<h3 id="覆盖属性或方法"><a href="#覆盖属性或方法" class="headerlink" title="覆盖属性或方法"></a>覆盖属性或方法</h3><p>开放覆盖的属性和方法必须用open修饰，覆盖的必须用override修饰。覆盖属性的时候var可以覆盖val，反之则不行。</p>
+<h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><p>接口默认为open，不需要主构造函数。</p>
+<h2 id="二-字段"><a href="#二-字段" class="headerlink" title="二.字段"></a>二.字段</h2><p>字段的完整语法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var &lt;propertyName&gt;[: &lt;PropertyType&gt;] [= &lt;property_initializer&gt;]</span><br><span class="line">    [&lt;getter&gt;]</span><br><span class="line">    [&lt;setter&gt;]</span><br></pre></td></tr></table></figure></p>
+<p>也就是是说，当我们没有声明getter和setter时默认就已经有这些东西了。当我们声明以后可以得到自定义的实现。如果想屏蔽getter或者setter，可以使用private set。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var setterVisibility: String = <span class="string">"abc"</span></span><br><span class="line">    <span class="keyword">private</span> set <span class="comment">// 此 setter 是私有的并且有默认实现</span></span><br></pre></td></tr></table></figure></p>
+<p>在访问器里面，我们可以使用field来代替此字段<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">var counter = <span class="number">0</span> <span class="comment">// 注意：这个初始器直接为幕后字段赋值</span></span><br><span class="line">    set(value) &#123;</span><br><span class="line">        <span class="keyword">if</span> (value &gt;= <span class="number">0</span>) field = value</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="lateinit"><a href="#lateinit" class="headerlink" title="lateinit"></a>lateinit</h3><p>属性初始化要点如下：</p>
+<ul>
+<li>当我们在类外面声明属性为可空或非空时，都必须进行初始化</li>
+<li>声明为lateinit的对象必须是可空对象，非空对象不行。</li>
+<li>使用.isInitialized来判断属性是否被初始化了。</li>
+</ul>
+<p><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180410161250423.png" alt=""></p>
+<h2 id="三-扩展"><a href="#三-扩展" class="headerlink" title="三.扩展"></a>三.扩展</h2><p>所有扩展的定义域都在包里，使用之外的扩展就需要导入。</p>
+<p>1.扩展函数<br>kotlin可以通过扩展来扩展类的新功能而无需继承或装饰。原理就是：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">fun ClassLearning.f(str: String)&#123;</span><br><span class="line">    <span class="keyword">this</span>.arr[<span class="number">3</span>] = <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">open class <span class="title">ClassLearning</span><span class="params">(val name: String, val age: Int)</span></span>&#123;</span><br><span class="line">    var arr = Array&lt;Int&gt;(<span class="number">5</span>, &#123;<span class="number">1</span>;<span class="number">2</span>;<span class="number">4</span>;<span class="number">2</span>;<span class="number">1</span>&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>反编译之后如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">ClassLearningKt</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(@NotNull ClassLearning $receiver, @NotNull String str)</span> </span>&#123;</span><br><span class="line">      Intrinsics.checkParameterIsNotNull($receiver, <span class="string">"$receiver"</span>);</span><br><span class="line">      Intrinsics.checkParameterIsNotNull(str, <span class="string">"str"</span>);</span><br><span class="line">      $receiver.getArr()[<span class="number">3</span>] = <span class="number">0</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(@NotNull String[] args)</span> </span>&#123;</span><br><span class="line">      Intrinsics.checkParameterIsNotNull(args, <span class="string">"args"</span>);</span><br><span class="line">      ClassLearning l = <span class="keyword">new</span> ClassLearning(<span class="string">"oubin"</span>);</span><br><span class="line">      f(l, <span class="string">"f方法"</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看到被扩展的对象被打包成了receiver，然后就是这个对象直接操作他自身的元素了。也就是说，扩展对象并没有改变他们所扩展的类，而是通过生成另外一个方法来操作。所以我们可以发现，这个方法绝对是编译器生成的，所以对于运行期重载的情况怕是用不了了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">open class C</span><br><span class="line"></span><br><span class="line">class D: C()</span><br><span class="line"></span><br><span class="line">fun C.foo() = &quot;c&quot;</span><br><span class="line"></span><br><span class="line">fun D.foo() = &quot;d&quot;</span><br><span class="line"></span><br><span class="line">fun printFoo(c: C) &#123;</span><br><span class="line">    println(c.foo())</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">printFoo(D())  // 会print c</span><br></pre></td></tr></table></figure></p>
+<p>2.扩展属性<br>扩展属性不能有初始化器，他们的行为只能由显式的getter和setter定义。扩展属性也是在新类中生成了一个get方法，然后将扩展属性的get()返回的值进行返回。</p>
+<p>3.伴生对象扩展：同样伴生对象也可以定义扩展函数和属性。</p>
+<h2 id="四-数据类"><a href="#四-数据类" class="headerlink" title="四.数据类"></a>四.数据类</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">data class Person(val name: String)&#123;</span><br><span class="line">    var age: Int = 0</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fun Person.copy(name:String = this.name) = Person(name)</span><br></pre></td></tr></table></figure>
+<p>数据类可以将部分属性放入括号内，从而排除这些属性。进行copy的时候可以如上定义，然后Person对象可以直接调用copy函数</p>
+<p>数据类的解构声明：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">val jane = User(&quot;Jane&quot;, 35)</span><br><span class="line">val (name, age) = jane</span><br><span class="line">println(&quot;$name, $age years of age&quot;)</span><br></pre></td></tr></table></figure></p>
+<p>他是使用了利用了componentN()函数。<br><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180410170358854.png" alt=""></p>
+<h2 id="五-嵌套类"><a href="#五-嵌套类" class="headerlink" title="五.嵌套类"></a>五.嵌套类</h2><p>内部类通过标记为inner可以访问外部类的成员，因为会带有一个对外部类的对象的引用。</p>
+<p>匿名内部类可以使用对象表达式来实现。</p>
+<h2 id="六-对象"><a href="#六-对象" class="headerlink" title="六.对象"></a>六.对象</h2><p>1.对象表达式: 样式为 object: X(){…}<br>当我们不需要任何超类型时，就写做 val a = object{ val x = 3}, 这样我们就可以访问a.x<br>它的实现原理是通过new Object()去生成了这样一个对象并定义相关属性。</p>
+<p>对象表达式可以访问外部的属性，并且比java匿名内部类更牛的是它不限制是final对象。</p>
+<p>2.伴生对象<br>当我们在类中定义伴生对象时发生了什么：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">class HeritLearning(name: String) : ClassLearning(name)&#123;</span><br><span class="line">    companion object &#123;</span><br><span class="line">        val x: String = <span class="string">"ds"</span></span><br><span class="line"></span><br><span class="line">        <span class="function">fun <span class="title">get</span><span class="params">()</span></span>&#123;</span><br><span class="line">            println()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 反编译后为</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Companion</span> </span>&#123;</span><br><span class="line">      <span class="meta">@NotNull</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> String <span class="title">getX</span><span class="params">()</span> </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> HeritLearning.x;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">get</span><span class="params">()</span> </span>&#123;</span><br><span class="line">         System.out.println();</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">private</span> <span class="title">Companion</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// $FF: synthetic method</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="title">Companion</span><span class="params">(DefaultConstructorMarker $constructor_marker)</span> </span>&#123;</span><br><span class="line">         <span class="keyword">this</span>();</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看到我们的companion被编译成了一个静态内部类，属性被定义为外部类的静态属性，而方法确是这个静态内部类的方法。由此，我们知道伴生方法是访问不了非伴生属性的。</p>
+<h2 id="七-委托"><a href="#七-委托" class="headerlink" title="七.委托"></a>七.委托</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Base</span> </span>&#123;</span><br><span class="line">    <span class="function">fun <span class="title">print</span><span class="params">()</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">class <span class="title">BaseImpl</span><span class="params">(val x: Int)</span> : Base </span>&#123;</span><br><span class="line">    <span class="function">override fun <span class="title">print</span><span class="params">()</span> </span>&#123; print(x) &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class Derived(b: Base) : Base by b</span><br><span class="line"></span><br><span class="line"><span class="function">fun <span class="title">main</span><span class="params">(args: Array&lt;String&gt;)</span> </span>&#123;</span><br><span class="line">    val b = BaseImpl(<span class="number">10</span>)</span><br><span class="line">    Derived(b).print() <span class="comment">// 输出 10</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/08/Kotlin深入学习系列(一)：基础篇/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/04/08/Kotlin深入学习系列(一)：基础篇/" itemprop="url">Kotlin深入学习系列(一):基础篇</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-08T20:08:01+08:00">
+                2018-04-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kotlin/" itemprop="url" rel="index">
+                    <span itemprop="name">Kotlin</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="基础篇"><a href="#基础篇" class="headerlink" title="基础篇"></a>基础篇</h1><h2 id="基本类型"><a href="#基本类型" class="headerlink" title="基本类型"></a>基本类型</h2><p>1.数字<br>数字与java中基本相同，主要是下面几点不同：</p>
+<ul>
+<li>kotlin对于数字没有隐式扩展转换(如从int转为long)</li>
+<li>在kotlin中字符不是数字</li>
+</ul>
+<p>2.表示方式<br>kotlin会把数字存储为jvm的原生类型，但是只有在<strong>需要可空引用或泛型时</strong>数字会被装箱。<br>但是这里存在着一个坑：当取值在[-128, 127]之间时不会被装箱，而在这之外的int数字才会被装箱，如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">val b:Int = 5    // 被编译为 short b = 5;</span><br><span class="line">val b1:Int? = b  // 被编译为 Integer i = Integer.valueOf(5)</span><br><span class="line">val b11:Int? = b  </span><br><span class="line">println(b1 === b11) // 注意这里打印的是 &apos;true&apos;  </span><br><span class="line"></span><br><span class="line">val a: Int = 10000  </span><br><span class="line">val a1: Int? = a  </span><br><span class="line">val a11: Int? = a  </span><br><span class="line">println (a1 === a11 ) //注意这里打印的是 &apos;false&apos;</span><br></pre></td></tr></table></figure></p>
+<p>这是因为JVM把[-128,127]的所有int数字的装箱全部缓存了，任何指向这个范围的对象，都不可能被另外”创建”，应该是为了缓存最常用的数字以节省性能吧。</p>
+<p>3.在kotlin中万物皆对象，=== 是比较对象之间的地址是否相等， == 是比较对象的大小是否相等。</p>
+<p>4.数据类型转换：需要使用toByte(),toInt之类的转换。</p>
+<p>5.浮点数比较有些很棒的特性：</p>
+<ul>
+<li>区间实例以及区间检测：a..b、 x in a..b、 x !in a..b。 这里可以使用两个点来表示，甚至比python更方便。</li>
+<li>NaN与其自身相等，而且比任何其他元素都大</li>
+</ul>
+<p>6.字符Char不能直接当做数字，用单引号，与java一样。并且当需要可空引用时也会被装箱。</p>
+<p>7.数组：数组直接用Array<t>表示<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 一.已知所有元素</span></span><br><span class="line">val a = arrayOf(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>) <span class="comment">// array[1,2,3]</span></span><br><span class="line">val b = Array(<span class="number">5</span>, &#123; i -&gt; (i * i).toString() &#125;)  <span class="comment">// 数组大小和一个Array构造函数</span></span><br><span class="line"><span class="comment">// 二.空数组</span></span><br><span class="line">val c = emptyArray()/ arrayOfNulls&lt;String&gt;(<span class="number">0</span>)  <span class="comment">// 创建一个长度为0的null数组</span></span><br><span class="line"><span class="comment">// 三.基本类型</span></span><br><span class="line">val d = intArrayOf(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>)  <span class="comment">// 对于基本类型数组有特殊优化，但是得到的IntArray并不是Array的子类。</span></span><br><span class="line"><span class="comment">// 四.创建一个已知数量的数组</span></span><br><span class="line">val a = arrayOfNulls&lt;String&gt;(<span class="number">5</span>)</span><br></pre></td></tr></table></figure></t></p>
+<p>kotlin中数组是invariant的，不能把Array<string>赋值给Array<any>,但是可以是Array<out any=""></out></any></string></p>
+<p>8.字符串模板<br>字符串可以包含模板表达式 ，即一些小段代码，会求值并把结果合并到字符串中。模板表达式以美元符（$）开头，由一个简单的名字构成。如果要直接输出$符，只要不加变量即可:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">val s = <span class="string">"abc"</span></span><br><span class="line">println(<span class="string">"$s.length is $&#123;s.length&#125;"</span>) <span class="comment">// 输出“abc.length is 3”</span></span><br><span class="line">print(<span class="string">"$8.8"</span>)</span><br></pre></td></tr></table></figure></p>
+<h2 id="控制流"><a href="#控制流" class="headerlink" title="控制流"></a>控制流</h2><p>1.if语句表达三元运算符：val max = if (a &gt; b) a else b。与python中的表达十分相似：max = a if a &gt; b else b</p>
+<p>2.When表达式<br>when是一个加强的switch语句，可以作为语句也可以作为表达式。可以替代if else if链<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fun hasPrefix(x: Any) = when(x) &#123;</span><br><span class="line">    1,2 -&gt; true</span><br><span class="line">    is String -&gt; x.startsWith(&quot;prefix&quot;)</span><br><span class="line">    else -&gt; false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>3.for可以循环任何提供了迭代器的对象。</p>
+<p>4.Kotlin中任何表达式都可以用标签(label)来标记。标签的格式为标识符后跟@符号<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">loop@ for (i in 1..100) &#123;</span><br><span class="line">    for (j in 1..100) &#123;</span><br><span class="line">        if (……) break@loop</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>例子中的break可以直接跳出两重循环。同样的return,continue都可以使用这种操作。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/11/生成模型与判别模型/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -740,7 +1334,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -762,7 +1356,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">tags</span>
                 
               </div>

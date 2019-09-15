@@ -230,6 +230,706 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/05/一篇文章深入gradle/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/09/05/一篇文章深入gradle/" itemprop="url">一篇文章深入gradle（上篇）:依赖机制</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-09-05T21:30:44+08:00">
+                2019-09-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="一篇文章深入gradle（上篇）-依赖机制"><a href="#一篇文章深入gradle（上篇）-依赖机制" class="headerlink" title="一篇文章深入gradle（上篇）:依赖机制"></a>一篇文章深入gradle（上篇）:依赖机制</h2><p>Hello，各位朋友们，小笨鸟又和你们见面啦。不同于网上泛泛而谈的入门文章只停留在“怎么用”的层次，本篇文章从源码角度去理解gradle。当然，如果你没有看过我的前一篇文章《一篇文章基本看懂gradle》，还是建议你先看一下，本篇文章的很多知识点会在上篇文章的基础上展开。</p>
+<p>本篇文章会比较深入，需要费一些脑筋和精力才能理解。建议跟着我的行文思路一步一步理解。本文的篇幅会比较长。阅读大概需要花费半个小时。阅读本文将会了解:</p>
+<ul>
+<li>gradle构建Lifecycle</li>
+<li>gradle Extension和Plugin</li>
+<li>gradle依赖实现，Configuration</li>
+</ul>
+<p>其中gradle依赖将会是本文的重点。本来之前还想把artifact也讲解到，但是发现篇幅已经很长了，所以就一篇文章拆成两篇吧。</p>
+<h2 id="gradle构建Lifecycle"><a href="#gradle构建Lifecycle" class="headerlink" title="gradle构建Lifecycle"></a>gradle构建Lifecycle</h2><p>Lifecycle的概念我们在上一篇文章讲Project的时候也讲到过。在这篇文章中，我们会再简单讲一讲作为引入。</p>
+<p>正如<a href="https://docs.gradle.org/current/userguide/build_lifecycle.html" target="_blank" rel="noopener">官网</a>所说，gradle构建流程总共为三个阶段：</p>
+<ul>
+<li>初始化阶段：在这个阶段中settings.gradle是主角，gradle会把settings.gradle中的配置代理给Settings类。主要负责的是判断哪些module需要参与到构建中，然后根据这些module的设置初始化他们的delegate对象Project。注意，Project对象是在初始化阶段生成的。</li>
+<li>配置阶段：配置阶段的任务是执行各项目下的build.gradle，完成Project对象的配置，并且构造Task任务依赖关系图<code>TaskExectionGraph</code>以便在执行阶段按照依赖关系执行Task。</li>
+<li>执行阶段：执行阶段会根据你命令行输入的Task，按照依赖关系通过调用<code>gradle taskname</code>进行执行。</li>
+</ul>
+<p>值得一提的是，我们可以通过多种方式对project构建阶段进行监控和处理。如<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 以下为Project的方法</span></span><br><span class="line">afterEvaluate(closure)，afterEvaluate(action)</span><br><span class="line">beforeEvaluate(closure)，beforeEvaluate(action)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 以下为gradle提供的生命周期回调</span></span><br><span class="line">afterProject(closure)，afterProject(action)</span><br><span class="line">beforeProject(closure)，beforeProject(action)</span><br><span class="line">buildFinished(closure)，buildFinished(action)</span><br><span class="line">projectsEvaluated(closure)，projectsEvaluated(action)</span><br><span class="line">projectsLoaded(closure)，projectsLoaded(action)</span><br><span class="line">settingsEvaluated(closure)，settingsEvaluated(action)</span><br><span class="line">addBuildListener(buildListener)</span><br><span class="line">addListener(listener)</span><br><span class="line">addProjectEvaluationListener(listener)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Task也有这种方法</span></span><br><span class="line">afterTask​(Closure closure)</span><br><span class="line">beforeTask(Closure closure)</span><br><span class="line"><span class="comment">//任务准备好后调用</span></span><br><span class="line">whenReady(Closure closure)</span><br></pre></td></tr></table></figure></p>
+<p>那么知道这样的构建流程我们可以怎么使用呢？我们可以进行监控，或者是动态的根据需要去控制project和task的构建执行。比如为了加快编译速度，我们去掉一些测试的task。就可以这样写<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">gradle.taskGraph.whenReady &#123;</span><br><span class="line">        tasks.each &#123; task -&gt;</span><br><span class="line">            if (task.name.contains(&quot;Test&quot;)) &#123;</span><br><span class="line">                task.enabled = false</span><br><span class="line">            &#125; else if (task.name == &quot;mockableAndroidJar&quot;) &#123;</span><br><span class="line">                task.enabled = false</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Extension和Plugin"><a href="#Extension和Plugin" class="headerlink" title="Extension和Plugin"></a>Extension和Plugin</h2><p>Extension和Plugin都是我们日常开发中经常有讲到的东西。上一篇文章中我们讲到了build.gradle中的闭包都是有一个Delegate代理的，这个代理对象可以接受闭包中的参数传递给自己来使用，那么这个代理是啥呢？其实就是我们这里要说的Extension。</p>
+<p>1.Extension通俗来讲其实就是一个普通的java bean。里面存放一些参数。使用需要借助于ExtensionContainer来进行创建。举个栗子<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 先定义一个实体类</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Message</span> </span>&#123;</span><br><span class="line">    String message = <span class="string">"empty"</span></span><br><span class="line">    String greeter = <span class="string">"none"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 接下来在gradle文件中去使用project.extensions(也就是ExtensionContainer)来进行创建。</span></span><br><span class="line">def extension = project.extensions.create(<span class="string">"cyMessage"</span>, Message)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 再写个task来进行验证</span></span><br><span class="line">project.task(<span class="string">'sendMessage'</span>) &#123;</span><br><span class="line">    doLast &#123;</span><br><span class="line">        println <span class="string">"$&#123;extension.message&#125; from $&#123;extension.greeter&#125;"</span></span><br><span class="line">        println project.cyMessage.message + <span class="string">"from $&#123;extension.greeter&#125;"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>2.Plugin插件<br>讲完了Extension，我们可能就会疑惑了。因为我们在build.gradle中并没有看到这些javabean和extension添加的操作啊，那么这些代码是在哪里写的呢？这时候我们就要引入Plugin的概念了，也就是你看到的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply plugin &apos;com.android.application&apos;</span><br></pre></td></tr></table></figure></p>
+<p>这个玩意了。这个就是Android Application的插件。android相关的Extension都是定义在这个插件中的。<br>有些同学可能对插件不是很理解，为什么需要这个东西。其实大家可以思考一下，gradle只是一个通用的构建工具。在他上层可能有各种应用，比如java，比如Android，甚至可能是未来的鸿蒙。那么这些应用对gradle肯定会有不同的扩展，又肯定不能把这些扩展直接放在gradle中。所以在上层添加插件就是个好选择，需要什么扩展就选什么插件。<br>Android开发中常见的插件有三种：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apply plugin &apos;com.android.application&apos;   // AppPlugin,  主module才能引用</span><br><span class="line">apply plugin &apos;com.android.library&apos;    // LibraryPlugin, 普通的android module引用</span><br><span class="line">apply plugin &apos;java&apos;                           // java module的引用</span><br></pre></td></tr></table></figure></p>
+<p>插件的其它知识不是本篇文章的重点，网上这方面的文章很多，大家可以自行学习。我们根据现在掌握的知识就要去探索gradle更深层次的知识啦。</p>
+<h2 id="gradle依赖实现"><a href="#gradle依赖实现" class="headerlink" title="gradle依赖实现"></a>gradle依赖实现</h2><p>这两篇文章截止到现在，gradle构建相关的流程我们基本都走通了。但是有个很重要的组件我们没有去分析。就是依赖管理。我们前一篇文章也讲到了，依赖管理是gradle的一个很重要的特性，方便我们进行代码复用。那么我们这一部分就专门讲一讲依赖管理到底是怎么实现的。</p>
+<p>首先我们还是看看基本的代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    implementation fileTree(include: [&apos;*.jar&apos;], dir: &apos;libs&apos;)</span><br><span class="line">    implementation &apos;com.android.support:appcompat-v7:26.1.0&apos;</span><br><span class="line">    api  &apos;com.android.support:appcompat-v7:26.1.0&apos;</span><br><span class="line">    implementation project(&apos;:test&apos;)</span><br><span class="line">    androidTestImplementation &apos;com.android.support.test:runner:1.0.1&apos;</span><br><span class="line">    annotationProcessor &apos;com.jakewharton:butterknife-compiler:8.4.0&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们可以看到，一般有三种三方库类型，第一种是二进制文件，fileTree指向这个文件夹下的所有jar文件，第二种是三方库的string坐标形式，第三种是project的形式。<br>当然，我们也会知道，代码中的implementation和api两种引用方式是有区别的。implement的依赖是不能传递的，但是api是可以的。</p>
+<p>我们在之前的研发中，可能没有去考虑深层次的这三种三方库类型，两种引用方式的原因。当我们按照上一篇中所说的代理模式去DependencyHandler中找implement, api等相关方法的时候，却发现，好像并没有定义这些方法，那么这是怎么回事呢？如果没有定义，是不是可以随便定义一种引用方式呢？带着问题我们往下面看</p>
+<h3 id="1-源码阅读姿势"><a href="#1-源码阅读姿势" class="headerlink" title="1.源码阅读姿势"></a>1.源码阅读姿势</h3><p>首先我们还是先介绍一下阅读gradle源码的方式。我尝试了很多种方式，发现还是Android studio阅读起来最舒服，然后找到了一种方法。就是可以建一个gradle的demo，然后建一个module，把除了build.gradle以外的东西全部删掉。然后拷贝下面的代码进去。这样就能看到源码了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">apply plugin &apos;java&apos;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">     compile gradleApi()</span><br><span class="line">     compile &apos;xxxx&apos;  // 填入你gradle的版本</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="2-源码分析"><a href="#2-源码分析" class="headerlink" title="2.源码分析"></a>2.源码分析</h3><h4 id="2-1-methodmissing"><a href="#2-1-methodmissing" class="headerlink" title="2.1 methodmissing"></a>2.1 methodmissing</h4><p>首先我们先介绍一个groovy语言的特性：methodmissing。大家可以参考<a href="http://groovy-lang.org/metaprogramming.html#_methodmissing" target="_blank" rel="noopener">官网</a><br>简单来说就是当我们预先在一个类中定义一个methodmissing方法。然后在这个类的对象上调用之前没有定义过的方法时，这个方法就会降级(fallback)到它所定义的methodmissing方法上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">class GORM &#123;</span><br><span class="line"></span><br><span class="line">   def dynamicMethods = [...] // an array of dynamic methods that use regex</span><br><span class="line"></span><br><span class="line">   def methodMissing(String name, args) &#123;</span><br><span class="line">       def method = dynamicMethods.find &#123; it.match(name) &#125;</span><br><span class="line">       if(method) &#123;</span><br><span class="line">          GORM.metaClass.&quot;$name&quot; = &#123; Object[] varArgs -&gt;</span><br><span class="line">             method.invoke(delegate, name, varArgs)</span><br><span class="line">          &#125;</span><br><span class="line">          return method.invoke(delegate,name, args)</span><br><span class="line">       &#125;</span><br><span class="line">       else throw new MissingMethodException(name, delegate, args)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">assert new GORM().methodA(1) == resultA</span><br></pre></td></tr></table></figure></p>
+<p>如图，当我们调用methodA时，因为这个方法没有定义，就会转到methodmissing方法上，并且会把这个方法的名字methodA和它的参数一起传到methodmissing，这样如果dynamicMethod里面有定义methodA的话，这个方法就能执行了。这就是methodmissing的妙用。</p>
+<p>为什么需要这种机制呢？我理解这还是为了扩展性。dependencies是gradle自身的功能。它不能完全的总括所有上层应用可能会有的引用方式。每种插件都可能增加引用的方式，为了扩展性考虑，必须采用这种methodmissing的特性，把这些引用交给插件处理。比如Android的implement, api, annotationProcessor等。</p>
+<h4 id="2-2-Configuration"><a href="#2-2-Configuration" class="headerlink" title="2.2 Configuration"></a>2.2 Configuration</h4><p>在往下面讲解前，我们先了解一下<a href="https://docs.gradle.org/current/userguide/managing_dependency_configurations.html" target="_blank" rel="noopener">Configuration</a>的一些知识。<br>按照官网所说：</p>
+<blockquote>
+<p>Every dependency declared for a Gradle project applies to a specific scope. For example some dependencies should be used for compiling source code whereas others only need to be available at runtime. Gradle represents the scope of a dependency with the help of a Configuration. Every configuration can be identified by a unique name.</p>
+</blockquote>
+<p>也就是说，Configuration定义了依赖在编译和运行时候的不同范围, 每个Configuration都有name来区分。比如android常见的两种依赖方式implementation和api。<br><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190904002104.png" alt="">。</p>
+<h4 id="2-3-依赖的识别"><a href="#2-3-依赖的识别" class="headerlink" title="2.3 依赖的识别"></a>2.3 依赖的识别</h4><p>gradle中使用MethodMixIn这个接口来实现methodmissing的能力。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// MethodMixIn</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MethodMixIn</span> </span>&#123;</span><br><span class="line">    <span class="function">MethodAccess <span class="title">getAdditionalMethods</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MethodAccess</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns true when this object is known to have a method with the given name that accepts the given arguments.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;Note that not every method is known. Some methods may require an attempt invoke it in order for them to be discovered.&lt;/p&gt;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">hasMethod</span><span class="params">(String name, Object... arguments)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Invokes the method with the given name and arguments.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">DynamicInvokeResult <span class="title">tryInvokeMethod</span><span class="params">(String name, Object... arguments)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到这里的methodmissing主要是在找不到这个方法的时候去返回一个MethodAccess，MethodAccess中去判断是否存在以及动态执行这个method。</p>
+<p>接下来我们看DependencyHandler的实现类DefaultDependencyHandler。这个类实现了MethodMixIn接口，返回的是一个DynamicAddDependencyMethods对象。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DefaultDependencyHandler.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DefaultDependencyHandler</span><span class="params">(...)</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">this</span>.dynamicMethods = <span class="keyword">new</span> DynamicAddDependencyMethods(configurationContainer, <span class="keyword">new</span> DefaultDependencyHandler.DirectDependencyAdder());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> MethodAccess <span class="title">getAdditionalMethods</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.dynamicMethods;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>所以其实就是返回了一个DynamicAddDependencyMethods去加以判断。那么毫无疑问要在这个类中进行判断和执行具体方法。接下来我们看看这个类中是怎么处理的。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">DynamicAddDependencyMethods(ConfigurationContainer configurationContainer, DynamicAddDependencyMethods.DependencyAdder dependencyAdder) &#123;</span><br><span class="line">    <span class="keyword">this</span>.configurationContainer = configurationContainer;</span><br><span class="line">    <span class="keyword">this</span>.dependencyAdder = dependencyAdder;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasMethod</span><span class="params">(String name, Object... arguments)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> arguments.length != <span class="number">0</span> &amp;&amp; <span class="keyword">this</span>.configurationContainer.findByName(name) != <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> DynamicInvokeResult <span class="title">tryInvokeMethod</span><span class="params">(String name, Object... arguments)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (arguments.length == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> DynamicInvokeResult.notFound();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        Configuration configuration = (Configuration)<span class="keyword">this</span>.configurationContainer.findByName(name);</span><br><span class="line">        <span class="keyword">if</span> (configuration == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> DynamicInvokeResult.notFound();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            List&lt;?&gt; normalizedArgs = CollectionUtils.flattenCollections(arguments);</span><br><span class="line">            <span class="keyword">if</span> (normalizedArgs.size() == <span class="number">2</span> &amp;&amp; normalizedArgs.get(<span class="number">1</span>) <span class="keyword">instanceof</span> Closure) &#123;</span><br><span class="line">                <span class="keyword">return</span> DynamicInvokeResult.found(<span class="keyword">this</span>.dependencyAdder.add(configuration, normalizedArgs.get(<span class="number">0</span>), (Closure)normalizedArgs.get(<span class="number">1</span>)));</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (normalizedArgs.size() == <span class="number">1</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> DynamicInvokeResult.found(<span class="keyword">this</span>.dependencyAdder.add(configuration, normalizedArgs.get(<span class="number">0</span>), (Closure)<span class="keyword">null</span>));</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                Iterator var5 = normalizedArgs.iterator();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">while</span>(var5.hasNext()) &#123;</span><br><span class="line">                    Object arg = var5.next();</span><br><span class="line">                    <span class="keyword">this</span>.dependencyAdder.add(configuration, arg, (Closure)<span class="keyword">null</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> DynamicInvokeResult.found();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看到这个类的两个要点：<br>1.判断Configuration有无：通过外部传入的ConfigurationContainer来判断是否存在这个方法。<strong>这样我们可以联想到，这个ConfigurationContainer肯定是每个平台Plugin自己传入的，必须是已定义的才能使用</strong>。比如android就添加了implementation, api等。如果你想查看Configuration在gradle源码中的初始化和配置，可以查看VariantDependencies这个类。</p>
+<p>2.执行方法：真正的执行方法会根据参数来判断，比如我们常见的一个参数的引用形式，还有一个参数+一个闭包的形式，比如<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">compile(<span class="string">'com.zhyea:ar4j:1.0'</span>) &#123;</span><br><span class="line">		exclude <span class="keyword">module</span>: <span class="string">'cglib'</span> <span class="comment">//by artifact name</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这种类型的引用。当在ConfigurationContainer中找到了这个引用方式(以下都称Configuration)时，就会返回一个DynamicInvokeResult。具体这个类的作用我们后面再看，我们先看他们都做了一个<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.dependencyAdder.add(configuration, arg, (Closure)<span class="keyword">null</span>);</span><br></pre></td></tr></table></figure></p>
+<p>的操作，这个操作是做了些什么呢，我们继续往下跟就会发现，其实还是调用了DefaultDependencyHandler的doAdd方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DefaultDependencyHandler.java</span></span><br><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">DirectDependencyAdder</span> <span class="keyword">implements</span> <span class="title">DependencyAdder</span>&lt;<span class="title">Dependency</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">DirectDependencyAdder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Dependency <span class="title">add</span><span class="params">(Configuration configuration, Object dependencyNotation, @Nullable Closure configureAction)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> DefaultDependencyHandler.<span class="keyword">this</span>.doAdd(configuration, dependencyNotation, configureAction);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> Dependency <span class="title">doAdd</span><span class="params">(Configuration configuration, Object dependencyNotation, Closure configureClosure)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (dependencyNotation <span class="keyword">instanceof</span> Configuration) &#123;</span><br><span class="line">        Configuration other = (Configuration)dependencyNotation;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>.configurationContainer.contains(other)) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> UnsupportedOperationException(<span class="string">"Currently you can only declare dependencies on configurations from the same project."</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            configuration.extendsFrom(<span class="keyword">new</span> Configuration[]&#123;other&#125;);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        Dependency dependency = <span class="keyword">this</span>.create(dependencyNotation, configureClosure);</span><br><span class="line">        configuration.getDependencies().add(dependency);</span><br><span class="line">        <span class="keyword">return</span> dependency;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看到，这里会先判断dependencyNotation是否是Configuration，如果存在的话，就让当前的configuration继承dependencyNotation，也就是所有添加到dependencyNotation的依赖都会添加到configuration中。</p>
+<p>这里可能有些朋友就会疑惑了，为啥还要对dependencyNotation判断呢？这个主要是为了处理嵌套的情况。比如implementation project(path: ‘:projectA’, configuration: ‘configA’)这种类型的引用。有兴趣可以看看上面的<code>CollectionUtils.flattenCollections(arguments)</code>方法。</p>
+<p>总结一下，这个过程就是借助gradle的MethodMixIn接口，将所有未定义的引用方法转到getAdditionalMethods方法上来，在这个方法里面判断Configuration是否存在，如果存在的话就生成Dependency。</p>
+<h4 id="2-4-依赖的创建"><a href="#2-4-依赖的创建" class="headerlink" title="2.4 依赖的创建"></a>2.4 依赖的创建</h4><p>可以看到上面过程的最后，是DefaultDependencyHandler调用了create方法创建出了一个Dependency。我们继续来分析创建Dependency的过程。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DefaultDependencyHandler.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Dependency <span class="title">create</span><span class="params">(Object dependencyNotation, Closure configureClosure)</span> </span>&#123;</span><br><span class="line">    Dependency dependency = <span class="keyword">this</span>.dependencyFactory.createDependency(dependencyNotation);</span><br><span class="line">    <span class="keyword">return</span> (Dependency)ConfigureUtil.configure(configureClosure, dependency);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// DefaultDependencyFactory.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Dependency <span class="title">createDependency</span><span class="params">(Object dependencyNotation)</span> </span>&#123;</span><br><span class="line">    Dependency dependency = (Dependency)<span class="keyword">this</span>.dependencyNotationParser.parseNotation(dependencyNotation);</span><br><span class="line">    <span class="keyword">this</span>.injectServices(dependency);</span><br><span class="line">    <span class="keyword">return</span> dependency;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到最终是调用了dependencyNotationParser来parse这个dependencyNotation。而这里的dependencyNotationParser其实就是DependencyNotationParser这个类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DependencyNotationParser</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> NotationParser&lt;Object, Dependency&gt; <span class="title">parser</span><span class="params">(Instantiator instantiator, DefaultProjectDependencyFactory dependencyFactory, ClassPathRegistry classPathRegistry, FileLookup fileLookup, RuntimeShadedJarFactory runtimeShadedJarFactory, CurrentGradleInstallation currentGradleInstallation, Interner&lt;String&gt; stringInterner)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> NotationParserBuilder.toType(Dependency.class)</span><br><span class="line">        .fromCharSequence(<span class="keyword">new</span> DependencyStringNotationConverter(instantiator, DefaultExternalModuleDependency.class, stringInterner))</span><br><span class="line">        .converter(<span class="keyword">new</span> DependencyMapNotationConverter(instantiator, DefaultExternalModuleDependency.class))</span><br><span class="line">        .fromType(FileCollection.class, <span class="keyword">new</span> DependencyFilesNotationConverter(instantiator))</span><br><span class="line">        .fromType(Project.class, <span class="keyword">new</span> DependencyProjectNotationConverter(dependencyFactory))</span><br><span class="line">        .fromType(ClassPathNotation.class, <span class="keyword">new</span> DependencyClassPathNotationConverter(instantiator, classPathRegistry, fileLookup.getFileResolver(), runtimeShadedJarFactory, currentGradleInstallation))</span><br><span class="line">        .invalidNotationMessage(<span class="string">"Comprehensive documentation on dependency notations is available in DSL reference for DependencyHandler type."</span>).toComposite();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从里面我们看到了FileCollection，Project，ClassPathNotation三个类，是不是感觉和我们的三种三方库资源形式很对应？其实这三种资源形式的解析就是用这三个类进行的。DependencyNotationParser就是整合了这些转换器，成为一个综合的转换器。其中，</p>
+<ul>
+<li>DependencyFilesNotationConverter将FileCollection解析为SelfResolvingDependency，也就是implementation fileTree(include: [‘*.jar’], dir: ‘libs’)这种形式。</li>
+<li>DependencyProjectNotationConverter将Project解析为ProjectDependency。也就是implementation project(‘:projectA’)</li>
+<li>DependencyClassPathNotationConverter将ClassPathNotation转成SelfResolvingDependency。也就是implementation ‘xxx’这种。</li>
+</ul>
+<p>这三种方式具体的解析方法大家可以自行阅读源码，不是本文重点。所以除了Project会被解析为ProjectDependency以外，其他的都是SelfResolvingDependency。其实ProjectDependency是SelfResolvingDependency的子类。他们的关系可以从SelfResolvingDependency的代码注释中看出。</p>
+<p><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190904101030.png" alt=""></p>
+<h4 id="2-5-ProjectDependency"><a href="#2-5-ProjectDependency" class="headerlink" title="2.5 ProjectDependency"></a>2.5 ProjectDependency</h4><p>接下来讲讲ProjectDependency.一个常见的Project引用如下：<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">implementation project(‘:projectA’)</span><br></pre></td></tr></table></figure></p>
+<p>这里的implementation我们已经知道是插件添加的扩展，不是gradle自带的。那project呢？这个就是gradle自带的了。delegate是DependencyHandler的project方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DefaultDependencyHandler.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Dependency <span class="title">project</span><span class="params">(Map&lt;String, ?&gt; notation)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.dependencyFactory.createProjectDependencyFromMap(<span class="keyword">this</span>.projectFinder, notation);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// DefaultDependencyFactory.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ProjectDependency <span class="title">createProjectDependencyFromMap</span><span class="params">(ProjectFinder projectFinder, Map&lt;? extends String, ? extends Object&gt; map)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.projectDependencyFactory.createFromMap(projectFinder, map);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ProjectDependencyFactory.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ProjectDependency <span class="title">createFromMap</span><span class="params">(ProjectFinder projectFinder, Map&lt;? extends String, ?&gt; map)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (ProjectDependency)NotationParserBuilder.toType(ProjectDependency.class).converter(<span class="keyword">new</span> ProjectDependencyFactory.ProjectDependencyMapNotationConverter(projectFinder, <span class="keyword">this</span>.factory)).toComposite().parseNotation(map);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// ProjectDependencyMapNotationConverter.java</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> ProjectDependency <span class="title">parseMap</span><span class="params">(@MapKey(<span class="string">"path"</span>)</span> String path, @Optional @<span class="title">MapKey</span><span class="params">(<span class="string">"configuration"</span>)</span> String configuration) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.factory.create(<span class="keyword">this</span>.projectFinder.getProject(path), configuration);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// DefaultProjectDependencyFactory.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> ProjectDependency <span class="title">create</span><span class="params">(ProjectInternal project, String configuration)</span> </span>&#123;</span><br><span class="line">    DefaultProjectDependency projectDependency = (DefaultProjectDependency)<span class="keyword">this</span>.instantiator.newInstance(DefaultProjectDependency.class, <span class="keyword">new</span> Object[]&#123;project, configuration, <span class="keyword">this</span>.projectAccessListener, <span class="keyword">this</span>.buildProjectDependencies&#125;);</span><br><span class="line">    projectDependency.setAttributesFactory(<span class="keyword">this</span>.attributesFactory);</span><br><span class="line">    projectDependency.setCapabilityNotationParser(<span class="keyword">this</span>.capabilityNotationParser);</span><br><span class="line">    <span class="keyword">return</span> projectDependency;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们可以看到，传入的project最终传递给了ProjectDependencyMapNotationConverter。先去查找这个project，然后通过factory去create ProjectDependency对象，当然这里也有考虑到Configuration的影响, 最终是产生了一个DefaultProjectDependency。这就是ProjectDependency的产生过程。</p>
+<h4 id="2-6-依赖的体现"><a href="#2-6-依赖的体现" class="headerlink" title="2.6 依赖的体现"></a>2.6 依赖的体现</h4><p>看到这里，大家可以已经理解了不同的依赖的解析方式，但是可能还是不理解依赖到底是一个什么东西。<strong>其实依赖库并不是依赖三方库的源代码，而是依赖三方库的产物，产物又是通过一系列的Task执行产生的</strong>。也就是说，projectA依赖projectB，那么A就拥有了对于B的产物的所有权。关于产物我们等后面再介绍。先了解一下Configuration对于产物有一些什么支持。<br>我们看Configuration的代码， 可以发现他继承了FileCollection接口，而FileCollection又继承了Buildable接口。这个接口有啥用呢，用处大得很。先看<a href="https://docs.gradle.org/current/dsl/org.gradle.api.Buildable.html" target="_blank" rel="noopener">官网</a>介绍</p>
+<p><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190905001835.png" alt=""></p>
+<p>Buildable表示着很多Task对象生成的产物。它里面只有一个方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Buildable</span> </span>&#123;</span><br><span class="line">    <span class="function">TaskDependency <span class="title">getBuildDependencies</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们看看DefaultProjectDependency的实现。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DefaultProjectDependency.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> TaskDependencyInternal <span class="title">getBuildDependencies</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> DefaultProjectDependency.TaskDependencyImpl();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">TaskDependencyImpl</span> <span class="keyword">extends</span> <span class="title">AbstractTaskDependency</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">TaskDependencyImpl</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitDependencies</span><span class="params">(TaskDependencyResolveContext context)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (DefaultProjectDependency.<span class="keyword">this</span>.buildProjectDependencies) &#123;</span><br><span class="line">            DefaultProjectDependency.<span class="keyword">this</span>.projectAccessListener.beforeResolvingProjectDependency(DefaultProjectDependency.<span class="keyword">this</span>.dependencyProject);</span><br><span class="line">            Configuration configuration = DefaultProjectDependency.<span class="keyword">this</span>.findProjectConfiguration();</span><br><span class="line">            context.add(configuration);</span><br><span class="line">            context.add(configuration.getAllArtifacts());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> Configuration <span class="title">findProjectConfiguration</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ConfigurationContainer dependencyConfigurations = <span class="keyword">this</span>.getDependencyProject().getConfigurations();</span><br><span class="line">    String declaredConfiguration = <span class="keyword">this</span>.getTargetConfiguration();</span><br><span class="line">    Configuration selectedConfiguration = dependencyConfigurations.getByName((String)GUtil.elvis(declaredConfiguration, <span class="string">"default"</span>));</span><br><span class="line">    <span class="keyword">if</span> (!selectedConfiguration.isCanBeConsumed()) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> ConfigurationNotConsumableException(<span class="keyword">this</span>.dependencyProject.getDisplayName(), selectedConfiguration.getName());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> selectedConfiguration;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们可以看到，其实就是在解析每个依赖的时候，如果指定了ConfigurationContainer中声明好的Configuration，比如implementation, api等，那就返回这个Configuration，否则就返回default。拿到这个Configuration之后，做了这个操作<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">context.add(configuration);</span><br><span class="line">context.add(configuration.getAllArtifacts());</span><br></pre></td></tr></table></figure></p>
+<p>这里的context是一个TaskDependencyResolveContext，它的add方法可以添加能contribute tasks to the result的对象，比如Task，TaskDependencies，Buildable等，这些类型都能为产生结果贡献Task(前面我们说到了就是靠Task产生产物的嘛)。 </p>
+<p>这里context把configuration和configuration.getAllArtifacts()加入，都是作为Buildable而加入。区别是configuration.getAllArtifacts()获取的是DefaultPublishArtifactSet对象。接下来看看DefaultPublishArtifactSet是怎么实现Buildable的方法的。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> TaskDependency <span class="title">getBuildDependencies</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.builtBy;   <span class="comment">// 这里的builtBy是下面的ArtifactsTaskDependency对象</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">ArtifactsTaskDependency</span> <span class="keyword">extends</span> <span class="title">AbstractTaskDependency</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">ArtifactsTaskDependency</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitDependencies</span><span class="params">(TaskDependencyResolveContext context)</span> </span>&#123;</span><br><span class="line">        Iterator var2 = DefaultPublishArtifactSet.<span class="keyword">this</span>.iterator();</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">while</span>(var2.hasNext()) &#123;</span><br><span class="line">            PublishArtifact publishArtifact = (PublishArtifact)var2.next();</span><br><span class="line">            context.add(publishArtifact);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们发现果然和DefaultPublishArtifactSet的名字一样，是作为set把里面包含的PublishArtifact对象逐个的放入context中。</p>
+<h4 id="2-7-总结"><a href="#2-7-总结" class="headerlink" title="2.7 总结"></a>2.7 总结</h4><p>我们在这一小节中分析了不同的依赖方式的区别，告诉了大家Configuration是什么东西，也告诉了大家依赖到底是怎么产生和起作用的。这样大家在日常开发中就更能知其所以然了。总结一下就是说</p>
+<ul>
+<li>implementation等都是通过methodmissing机制，被插件解析成不同的Configuration，所以要预定义。</li>
+<li>我们不同的依赖声明，将会被不同的转化器Parser进行转换。project依赖会被转换为ProjectDependency，其余的会被解析成可自解析的SelfResolvingDependencies。</li>
+<li>project依赖最终是Task和产物artifact的依赖。</li>
+</ul>
+<p>那么Task和产物又是一种什么关系呢？这个就涉及到更深层次了。本文篇幅有限，放在下一篇再分析吧。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文主要是从Extension和Plugin引入，主要讲解了gradle依赖的原理和解析机制，然后抛下了一个疑问：产物artifacts是怎么和依赖扯上关系的呢？这个问题我们等下一篇《一篇文章深入gradle（下篇）:Artifacts》再解答</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/30/一篇文章看懂gradle/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/08/30/一篇文章看懂gradle/" itemprop="url">一篇文章基本看懂gradle</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-30T10:09:44+08:00">
+                2019-08-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="一篇文章基本看懂gradle"><a href="#一篇文章基本看懂gradle" class="headerlink" title="一篇文章基本看懂gradle"></a>一篇文章基本看懂gradle</h1><p>Hi，大家好啊。笨鸟之旅已经很久都没有更新了，感谢大家这么久以来还把我留在列表里。这么久以来不更新的原因主要是我本人进入了一个迷茫期，对于工作和生活都提不起兴致来。加上每天工作的时间太长，一回家就瘫在床上了。这也导致了很久之前的文章计划一直都搁浅，做的计划一次一次的delay。于是生活进入了一个负循环。但是生活还是要向上看，还是要坚持去努力做点事情，努力去变得更好，所以我又来了。以后一定会努力的学习，努力的发文。</p>
+<p>这段时间来学习了gradle，也体会到了gradle从初步理解到基本熟悉，再到深入源码这样一个过程中的一些曲折。这篇文章主要是gradle的基础知识篇。看完这篇文章，你可以：</p>
+<ul>
+<li>清楚gradle的定义和解决的痛点</li>
+<li>基本理解Android gradle的运作机制</li>
+<li>基本理解gradle的大部分语法</li>
+<li>学会基本的groovy开发</li>
+</ul>
+<p>如果你想关注gradle更深入的一些知识，请继续关注后续gradle文章。</p>
+<h2 id="what-is-gradle"><a href="#what-is-gradle" class="headerlink" title="what is gradle?"></a>what is gradle?</h2><p>先来看一段维基百科上对于gradle的解释。</p>
+<blockquote>
+<p>Gradle是一个基于Apache Ant和Apache Maven概念的项目自动化构建工具。它使用一种基于Groovy的特定领域语言来声明项目设置，而不是传统的XML。当前其支持的语言限于Java、Groovy和Scala，计划未来将支持更多的语言。</p>
+</blockquote>
+<p>可能刚接触gradle的同学都不是很了解gradle的这个定义。可能就只会跟着网上的教程copy一点配置，但是不理解这些配置背后的原理。那么怎么来理解这句话呢，我们可以把握到三个要点：首先，它是一种<code>构建工具</code>，其次，gradle是<code>基于maven概念</code>的，最后，使用<code>groovy</code>这种语言来声明。要理解这几句话，我们先考虑几个场景。</p>
+<p>1.<code>渠道管理</code>：国内手机市场有大大小小数十个，大的手机厂商也有五六个，每个厂商可能又有不同的定制rom。如果我们要为不同市场和厂商进行适配，那就需要写这样的代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if(isHuawei) &#123;</span><br><span class="line">    // dosomething</span><br><span class="line">&#125; else if(isOppo) &#123;</span><br><span class="line">    // dosomething</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样的话，繁琐不说，对单个手机而言大量的无用代码被编译进apk中，包体积和运行速度都会受影响。为了解决这个问题，gradle引进了productFlavor和buildType的能力，能根据情况来进行打包。所以说他是一个<code>自动化构建工具</code>。可以看<a href="https://developer.android.com/studio/build?hl=zh-cn" target="_blank" rel="noopener">官方文档</a></p>
+<p>2.<code>依赖管理</code>：我们通常会在项目中引入各种三方库进行代码复用。比如，直接手动把jar或者aar copy到项目中，然后添加依赖。这种方法缺陷很明显，首先配置和删除流程很繁琐，其次，同一个jar可能会被多个项目所引用，导致不知不觉就copy了多个jar。最后，版本管理艰难。为了解决这个问题，gradle是基于maven仓库，配置和删除的时候仅需要对仓库的坐标进行操作，所有的库都会被gradle统一管理，大多数情况下每个库只会有一个版本存在于项目中，并且每个库只会有一个副本存在于项目中。</p>
+<p>所以gradle其实不是什么神秘的东西，只是基于某种语言(groovy, java, kotlin)的一种构建工具而已。只要我们大概掌握了基本的用法和他的内部原理，日常工作中就会知道自己网上搜到的命令是什么意思啦。skr~</p>
+<h2 id="小试牛刀-android中的gradle"><a href="#小试牛刀-android中的gradle" class="headerlink" title="小试牛刀-android中的gradle"></a>小试牛刀-android中的gradle</h2><p><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190829093346.png" alt="">  </p>
+<p>咱们先看看日常工作中经常用到的几个gradle文件。可以看到主要有有三个文件：<br>1.build.gradle<br>根文件下放的通常放的是针对整个工程的通用配置，每个module下面的build.gradle文件是针对每个module自身的配置。<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    ext.kotlin_version = <span class="string">'1.2.71'</span></span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath <span class="string">'com.android.tools.build:gradle:3.2.1'</span></span><br><span class="line">        classpath <span class="string">"org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这是一个默认的配置，我们可以看到有buildscript，allprojects，repositories，dependencies几个配置项，这些配置项是干嘛的呢，很多的同学在刚学gradle的时候都是一脸懵逼的。这些其实是gradle的一种特定的语法，我们称之为DSL(domain-specific language)。可以参考<a href="https://docs.gradle.org/current/dsl/index.html" target="_blank" rel="noopener">官网</a>。这里可以看到allprojects代理的是每个project，可以理解成我们的每个module，也就是对我们所写的每个module的配置。buildscript主要配置的是打包相关的东西，比如gradle版本，gradle插件版本等，这些都是针对构建工具自己的配置。repositories，dependencies是三方库的仓库和坐标。所以根目录的build.gradle相当于是整体的配置。</p>
+<p>而module下的build.gradle主要是android，dependencies等配置项。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;com.android.application&apos;</span><br><span class="line"></span><br><span class="line">android&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line">dependencies&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可能有些同学会感到奇怪，为啥我们在<a href="https://docs.gradle.org/current/dsl/index.html" target="_blank" rel="noopener">官网</a>没有看到android这个配置项呢？这个主要是因为它并不是gradle的DSL，某种意义上说应该算是android特有的，是通过Android的插件’com.android.application’带进来的配置项。我们如果把第一行删掉，就会发现android{}这个配置项找不到了。</p>
+<p>所以，我们可以发现，build.gradle里面的配置项，要么是gradle自带的，要么是各种插件定义的。有不认识的配置项，就去官网查询一下就好了，授人以鱼不如授人以渔嘛。我们后面也会讲解到引进插件的方式和怎么定义插件和配置项。</p>
+<p>2.settings.gradle<br>这个文件主要是决定每个module是否参与构建。我们可以这样去理解，settings.gradle相当于是每个module的开关，关上了这个module就不能使用了，别的依赖到它的module也都会出问题。</p>
+<p>3.gradle.properties<br>这里主要是增加和修改一些可以在构建过程中直接使用的参数。不只是可以添加自定义参数，还可以修改系统的参数哦~</p>
+<p>总结一下，就是说根目录下有一个build.gradle，处理整个工程的配置项，根目录下的settings.gradle配置整个工程中参与构建的module，每个module自己有一个build.gradle，处理自己模块的配置。这就是android构建的一个大概情况。当然，看了这一部分肯定还是不懂怎么去写的，接下来我们走进代码层面。</p>
+<h2 id="groovy-学gradle的密钥"><a href="#groovy-学gradle的密钥" class="headerlink" title="groovy-学gradle的密钥"></a>groovy-学gradle的密钥</h2><p>gradle可以使用groovy，kotlin，java等语言进行书写，但是groovy相对来说是目前比较流行的gradle配置方式，下面我们讲解一点groovy基础。不讲太多，够用就行。</p>
+<p>1.字符串</p>
+<p>groovy的字符串分为两种java.lang.String和groovy.lang.GString。其中单引号和三引号是String类型的。双引号是GString类型的。支持占位插值操作。和kotlin一样，groovy的插值操作也是用<code>${}</code>或者<code>$</code>来标示，<code>${}</code>用于一般替代字串或者表达式，<code>$</code>主要用于A.B的形式中。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> number = <span class="number">1</span> </span><br><span class="line"><span class="keyword">def</span> eagerGString = <span class="string">"value == $&#123;number&#125;"</span></span><br><span class="line"><span class="keyword">def</span> lazyGString = <span class="string">"value == $&#123; -&gt; number &#125;"</span></span><br><span class="line"></span><br><span class="line">println eagerGString</span><br><span class="line">println lazyGString</span><br><span class="line"></span><br><span class="line">number = <span class="number">2</span> </span><br><span class="line">println eagerGString </span><br><span class="line">println lazyGString</span><br></pre></td></tr></table></figure>
+<p>2.字符Character</p>
+<p>Groovy没有明确的Character。但是可以强行声明。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> c1 = <span class="string">'A'</span> </span><br><span class="line"><span class="keyword">assert</span> c1 <span class="keyword">instanceof</span> Character</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> c2 = <span class="string">'B'</span> <span class="keyword">as</span> <span class="keyword">char</span> </span><br><span class="line"><span class="keyword">assert</span> c2 <span class="keyword">instanceof</span> Character</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> c3 = (<span class="keyword">char</span>)<span class="string">'C'</span> </span><br><span class="line"><span class="keyword">assert</span> c3 <span class="keyword">instanceof</span> Character</span><br></pre></td></tr></table></figure>
+<p>4.List</p>
+<p>Groovy的列表和python的很像。支持动态扩展，支持放置多种数据。使用方法支持def和直接定义。还可以像python那样索引</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//List中存储任意类型</span></span><br><span class="line"><span class="keyword">def</span> heterogeneous = [<span class="number">1</span>, <span class="string">"a"</span>, <span class="literal">true</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">//判断List默认类型</span></span><br><span class="line"><span class="keyword">def</span> arrayList = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]</span><br><span class="line"><span class="keyword">assert</span> arrayList <span class="keyword">instanceof</span> java.util.ArrayList</span><br><span class="line"></span><br><span class="line"><span class="comment">//使用as强转类型</span></span><br><span class="line"><span class="keyword">def</span> linkedList = [<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>] <span class="keyword">as</span> LinkedList    </span><br><span class="line"><span class="keyword">assert</span> linkedList <span class="keyword">instanceof</span> java.util.LinkedList</span><br><span class="line"></span><br><span class="line"><span class="comment">//定义指定类型List</span></span><br><span class="line">LinkedList otherLinked = [<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]          </span><br><span class="line"><span class="keyword">assert</span> otherLinked <span class="keyword">instanceof</span> java.util.LinkedList</span><br><span class="line"></span><br><span class="line"><span class="comment">// 像python一样索引</span></span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">1</span>] == <span class="string">'b'</span></span><br><span class="line"><span class="comment">//负数下标则从右向左index</span></span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">-1</span>] == <span class="string">'d'</span>    </span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">-2</span>] == <span class="string">'c'</span></span><br><span class="line"><span class="comment">//指定item赋值判断</span></span><br><span class="line">letters[<span class="number">2</span>] = <span class="string">'C'</span>             </span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">2</span>] == <span class="string">'C'</span></span><br><span class="line"><span class="comment">//给List追加item</span></span><br><span class="line">letters &lt;&lt; <span class="string">'e'</span>               </span><br><span class="line"><span class="keyword">assert</span> letters[ <span class="number">4</span>] == <span class="string">'e'</span></span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">-1</span>] == <span class="string">'e'</span></span><br><span class="line"><span class="comment">//获取一段List子集</span></span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">1</span>, <span class="number">3</span>] == [<span class="string">'b'</span>, <span class="string">'d'</span>]         </span><br><span class="line"><span class="keyword">assert</span> letters[<span class="number">2.</span><span class="number">.4</span>] == [<span class="string">'C'</span>, <span class="string">'d'</span>, <span class="string">'e'</span>]</span><br></pre></td></tr></table></figure>
+<p>5.Map</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//定义一个Map</span></span><br><span class="line"><span class="keyword">def</span> colors = [<span class="string">red:</span> <span class="string">'#FF0000'</span>, <span class="string">green:</span> <span class="string">'#00FF00'</span>, <span class="string">blue:</span> <span class="string">'#0000FF'</span>]   </span><br><span class="line"><span class="comment">//获取一些指定key的value进行判断操作</span></span><br><span class="line"><span class="keyword">assert</span> colors[<span class="string">'red'</span>] == <span class="string">'#FF0000'</span>    </span><br><span class="line"><span class="keyword">assert</span> colors.green  == <span class="string">'#00FF00'</span></span><br></pre></td></tr></table></figure>
+<p>6.运算符</p>
+<ul>
+<li>**： 次方运算符。</li>
+<li>?.：安全占位符。和kotlin一样避免空指针异常。</li>
+<li>.@：直接域访问操作符。因为Groovy自动支持属性getter方法，但有时候我们有一个自己写的特殊getter方法，当不想调用这个特殊的getter方法则可以用直接域访问操作符。这点跟kotlin的</li>
+<li>.&amp;：方法指针操作符，因为闭包可以被作为一个方法的参数，如果想让一个方法作为另一个方法的参数则可以将一个方法当成一个闭包作为另一个方法的参数。</li>
+<li>?:：二目运算符。与kotlin中的类似。</li>
+<li><code>*.</code>展开运算符，一个集合使用展开运算符可以得到一个元素为原集合各个元素执行后面指定方法所得值的集合。</li>
+</ul>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cars = [</span><br><span class="line">    <span class="keyword">new</span> Car(<span class="string">make:</span> <span class="string">'Peugeot'</span>, <span class="string">model:</span> <span class="string">'508'</span>),</span><br><span class="line">   <span class="literal">null</span>,                                              </span><br><span class="line">   <span class="keyword">new</span> Car(<span class="string">make:</span> <span class="string">'Renault'</span>, <span class="string">model:</span> <span class="string">'Clio'</span>)]</span><br><span class="line"><span class="keyword">assert</span> cars*.make == [<span class="string">'Peugeot'</span>, <span class="literal">null</span>, <span class="string">'Renault'</span>]     </span><br><span class="line"><span class="keyword">assert</span> <span class="literal">null</span>*.make == <span class="literal">null</span></span><br></pre></td></tr></table></figure>
+<p>7.闭包<br>groovy里比较重要的是闭包的概念。官方定义是“Groovy中的闭包是一个开放，匿名的代码块，可以接受参数，返回值并分配给变量”。<br>其实闭包跟kotlin的lambda函数很像，都是先定义后执行。但是又有一些细微的区别。接下来我们细讲讲gradle的闭包。</p>
+<p>闭包是可以用作方法参数的代码块，Groovy的闭包更象是一个代码块或者方法指针，代码在某处被定义然后在其后的调用处执行。一个闭包实际上就是一个Closure类型的实例。写法和kotlin的lambda函数很像。</p>
+<p>我们常见的闭包是这样的<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//最基本的闭包</span></span><br><span class="line">&#123; item++ &#125;                                          </span><br><span class="line"><span class="comment">//使用-&gt;将参数与代码分离</span></span><br><span class="line">&#123;item -&gt; item++ &#125;                                       </span><br><span class="line"><span class="comment">//使用隐含参数it</span></span><br><span class="line">&#123; println it &#125;                               </span><br><span class="line"><span class="comment">//使用显示的名为参数</span></span><br><span class="line">&#123; name -&gt; println name &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用方法</span></span><br><span class="line">a.call()</span><br><span class="line">a()</span><br><span class="line"></span><br><span class="line"><span class="comment">// Groovy的闭包支持最后一个参数为不定长可变长度的参数。</span></span><br><span class="line"><span class="keyword">def</span> multiConcat = &#123; <span class="keyword">int</span> n, String... args -&gt;                </span><br><span class="line">    args.join(<span class="string">''</span>)*n</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>大家要注意，如果我们单纯的只是写成 a = { item++ }, 这只是定义了一个闭包，是不能运行的。必须调用a.call()才能运行出来。所以大家可以理解了，闭包就是一段代码块而已。当我们有需要的时候，可以去运行它，这么一想是不是和lambda函数很像？</p>
+<p>如果你看了<a href="https://docs.gradle.org/current/dsl/index.html" target="_blank" rel="noopener">官网</a>，你会发现有一些这样的说法，</p>
+<p><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/20190830093028.png" alt=""></p>
+<p>什么叫做delegate？这里涉及到闭包内部的三种对象。</p>
+<ul>
+<li>this 对应于定义闭包的那个类，如果在内部类中定义，指向的是内部类</li>
+<li>owenr 对应于定义闭包的那个类或者闭包，如果在闭包中定义，对应闭包，否则同this一致</li>
+<li>delegate 默认是和owner一致，或者自定义delegate指向</li>
+</ul>
+<p>this和owner都比较好理解。我们可以用闭包的getxxx方法获取<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> thisObject = closure.getThisObject()</span><br><span class="line"><span class="keyword">def</span> ownerObject = closure.getOwner()</span><br><span class="line"><span class="keyword">def</span> delegate = closure.getDelegate()</span><br></pre></td></tr></table></figure></p>
+<p>重头戏还是delegate这个对象。闭包可以设置delegate对象，<strong>设置delegate的意义就是将闭包和一个具体的对象关联起来</strong>。<br>我们先来看个例子，这里以自定义android闭包为例。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion 25</span><br><span class="line">    buildToolsVersion &quot;25.0.2&quot;</span><br><span class="line"></span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        minSdkVersion 15</span><br><span class="line">        targetSdkVersion 25</span><br><span class="line">        versionCode 1</span><br><span class="line">        versionName &quot;1.0&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个闭包对应的实体类是两个。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"># Android.groovy</span><br><span class="line">class Android &#123;</span><br><span class="line">    private int mCompileSdkVersion</span><br><span class="line">    private String mBuildToolsVersion</span><br><span class="line">    private ProductFlavor mProductFlavor</span><br><span class="line"></span><br><span class="line">    Android() &#123;</span><br><span class="line">        this.mProductFlavor = new ProductFlavor()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void compileSdkVersion(int compileSdkVersion) &#123;</span><br><span class="line">        this.mCompileSdkVersion = compileSdkVersion</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void buildToolsVersion(String buildToolsVersion) &#123;</span><br><span class="line">        this.mBuildToolsVersion = buildToolsVersion</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void defaultConfig(Closure closure) &#123;</span><br><span class="line">        closure.setDelegate(mProductFlavor)</span><br><span class="line">        closure.setResolveStrategy(Closure.DELEGATE_FIRST)</span><br><span class="line">        closure.call()</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    @Override</span><br><span class="line">     String toString() &#123;</span><br><span class="line">        return &quot;Android&#123;&quot; +</span><br><span class="line">                &quot;mCompileSdkVersion=&quot; + mCompileSdkVersion +</span><br><span class="line">                &quot;, mBuildToolsVersion=&apos;&quot; + mBuildToolsVersion + &apos;\&apos;&apos; +</span><br><span class="line">                &quot;, mProductFlavor=&quot; + mProductFlavor +</span><br><span class="line">                &apos;&#125;&apos;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># ProductFlavor.groovy</span><br><span class="line">class ProductFlavor &#123;</span><br><span class="line">    private int mVersionCode</span><br><span class="line">    private String mVersionName</span><br><span class="line">    private int mMinSdkVersion</span><br><span class="line">    private int mTargetSdkVersion</span><br><span class="line"></span><br><span class="line">    def versionCode(int versionCode) &#123;</span><br><span class="line">        mVersionCode = versionCode</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    def versionName(String versionName) &#123;</span><br><span class="line">        mVersionName = versionName</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    def minSdkVersion(int minSdkVersion) &#123;</span><br><span class="line">        mMinSdkVersion = minSdkVersion</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    def targetSdkVersion(int targetSdkVersion) &#123;</span><br><span class="line">        mTargetSdkVersion = targetSdkVersion</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    String toString() &#123;</span><br><span class="line">        return &quot;ProductFlavor&#123;&quot; +</span><br><span class="line">                &quot;mVersionCode=&quot; + mVersionCode +</span><br><span class="line">                &quot;, mVersionName=&apos;&quot; + mVersionName + &apos;\&apos;&apos; +</span><br><span class="line">                &quot;, mMinSdkVersion=&quot; + mMinSdkVersion +</span><br><span class="line">                &quot;, mTargetSdkVersion=&quot; + mTargetSdkVersion +</span><br><span class="line">                &apos;&#125;&apos;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后定义的时候就写成<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">//闭包定义</span><br><span class="line">def android = &#123;</span><br><span class="line">        compileSdkVersion 25</span><br><span class="line">        buildToolsVersion &quot;25.0.2&quot;</span><br><span class="line">        defaultConfig &#123;</span><br><span class="line">            minSdkVersion 15</span><br><span class="line">            targetSdkVersion 25</span><br><span class="line">            versionCode 1</span><br><span class="line">            versionName &quot;1.0&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">//调用</span><br><span class="line">Android bean = new Android()</span><br><span class="line">android.delegate = bean</span><br><span class="line">android.call()</span><br><span class="line">println bean.toString()</span><br><span class="line"></span><br><span class="line">//打印结果</span><br><span class="line">Android&#123;mCompileSdkVersion=25, mBuildToolsVersion=&apos;25.0.2&apos;, mProductFlavor=ProductFlavor&#123;mVersionCode=1, mVersionName=&apos;1.0&apos;, mMinSdkVersion=15, mTargetSdkVersion=25&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样就能将闭包中声明的值，赋给两个对象Android和ProductFlavor来处理了。</p>
+<p>上面官网的图里，说ScriptHandler被设置成buildscript的delegate。意思就是buildscript定义的参数被ScriptHandler拿来使用了。大家有兴趣的可以去看看ScriptHandler的源码~</p>
+<h2 id="Project与Task-gradle构建体系"><a href="#Project与Task-gradle构建体系" class="headerlink" title="Project与Task-gradle构建体系"></a>Project与Task-gradle构建体系</h2><p>上面我们讲完了基本的用法，大家可能懂gradle的配置和写法了。但是可能还是不懂gradle的构建体系到底是怎么样的。这里我们就要深入进gradle的构建体系Project和Task了。下面的东西看着就要动动脑筋了。</p>
+<p>1.Task<br>Task是gradle脚本中的最小可执行单元。类图如下：<br><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/006tNc79ly1g2ynzenpu3j30ji0cijsn.jpg" alt=""></p>
+<p>值得注意的是因为Gradle构建脚本默认的名字是build.gradle，当在shell中执行gradle命令时，Gradle会去当前目录下寻找名字是build.gradle的文件。<strong>所以只有定义在build.gradle中的Task才是有效的。</strong></p>
+<p>可以通过三种方式来声明task。我们可以根据自己的项目需要去定义Task。比如自定义task接管gradle的编译过程<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">task myTask2 &lt;&lt; &#123;</span><br><span class="line">    println <span class="string">"doLast in task2"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//采用 Project.task(String name) 方法来创建</span></span><br><span class="line">project.task(<span class="string">"myTask3"</span>).doLast &#123;</span><br><span class="line">    println <span class="string">"doLast in task3"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//采用 TaskContainer.create(String name) 方法来创建</span></span><br><span class="line">project.tasks.create(<span class="string">"myTask4"</span>).doLast &#123;</span><br><span class="line">    println <span class="string">"doLast in task4"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>TaskContianer 是用来管理所有的 Task 实例集合的，可以通过 Project.getTasks() 来获取 TaskContainer 实例。<br>常见接口：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">findByPath(path: String): Task</span><br><span class="line">getByPath(path: String): Task</span><br><span class="line">getByName(name: String): Task</span><br><span class="line">withType(type: Class): TaskCollection</span><br><span class="line">matching(condition: Closure): TaskCollection</span><br><span class="line"></span><br><span class="line"><span class="comment">//创建task</span></span><br><span class="line">create(name: String): Task</span><br><span class="line">create(name: String, configure: Closure): Task </span><br><span class="line">create(name: String, type: Class): Task</span><br><span class="line">create(options: Map&lt;String, ?&gt;): Task</span><br><span class="line">create(options: Map&lt;String, ?&gt;, configure: Closure): Task</span><br><span class="line"></span><br><span class="line"><span class="comment">//当task被加入到TaskContainer时的监听</span></span><br><span class="line">whenTaskAdded(action: Closure)</span><br></pre></td></tr></table></figure></p>
+<p>Gradle支持增量编译。了解过编译profile文件的朋友都知道，里面有大量的task都是<code>up-to-date</code>。那么这种up-to-date是什么意思呢。<code>Gradle的Task会把每次运行的结果缓存下来，当下次运行时，会检查一个task的输入输出有没有变更。如果没有变更就是up-to-date，跳过编译。</code></p>
+<p><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/006tNc79ly1g2zg1osecqj30rs0dtwfo.jpg" alt=""></p>
+<p>2.Project<br>先从Project对象讲起，Project是与Gradle交互的主接口。android开发中最为我们所熟悉的就是build.gradle文件，这个文件与Project是一对一的关系，build.gradle文件是project对象的委托，脚本中的配置都是对应着Project的Api。Gradle构建进程启动的时候会根据build.gradle去实例化Project类。也就是说，构建的时候，每个build.gradle文件会生成一个Project对象，这个对象负责当前module的构建。</p>
+<p>Project本质上是包含多个Task的容器，所有的Task存在TaskContainer中。我们从名字可以看出<br><img src="https://raw.githubusercontent.com/oubindo/ImageBed/master/img/006tNc79ly1g2ynlq52cbj30gb0xxjv3.jpg" alt=""></p>
+<p>可以看到dependencies, configuration, allprojects, subprojects, beforeEvaluate, afterEvaluate这些都是我们常见的配置项，在build.gradle文件中接收一个闭包Closure。</p>
+<p>好了，现在我们已经聊了build.gradle了，但是大家都知道，我们项目中还有一个settings.gradle呢，这个是拿来干嘛的呢？这就要说到Project的<code>Lifecycle</code>了，也就是Gradle构建Project的步骤，看官网原文：</p>
+<ul>
+<li>Create a Settings instance for the build.</li>
+<li>Evaluate the settings.gradle script, if present, against the Settings object to configure it.</li>
+<li>Use the configured Settings object to create the hierarchy of Project instances.</li>
+<li>Finally, evaluate each Project by executing its build.gradle file, if present, against the project. The projects are evaluated in breadth-wise order(宽度搜索), such that a project is evaluated before its child projects. This order can be overridden by calling <code>Project.evaluationDependsOnChildren()</code> or by adding an explicit evaluation dependency using <code>Project.evaluationDependsOn(java.lang.String)</code>.</li>
+</ul>
+<p>也就是说，Project对象依赖Settings对象的构建。我们常在settings.gradle文件中配置需要引入的module，就是这个原因。</p>
+<p>3.Property<br>看完了build.gradle和settings.gradle，接下来我们讲讲gradle.properties。这个文件存放的键值对形式的属性，这些属性能被项目中的gradle脚本使用ext.xxx所访问。</p>
+<p>我们也可以使用Properties类来动态创建属性文件。如：<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> defaultProps = <span class="keyword">new</span> Properties()</span><br><span class="line">defaultProps.setProperty(<span class="string">"debuggable"</span>, <span class="string">'true'</span>)</span><br><span class="line">defaultProps.setProperty(<span class="string">"groupId"</span>, GROUP)</span><br></pre></td></tr></table></figure></p>
+<p>并且属性可以继承，在一个项目中定义的属性可以自动被子项目继承。所以在哪个子项目都可以使用project.ext.xxx访问。不同子项目间采用通用的配置插件来配置<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply <span class="string">from:</span> rootProject.file(<span class="string">'library.gradle'</span>)</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过上面的学习，大家应该已经了解了gradle的基本配置，写法和比较浅显的内部原理了。因为篇幅原因，深入的内容我们放在下一篇。敬请期待《一篇文章深入gradle》</p>
+<p>我是Android笨鸟之旅，一个陪着你慢慢变强的公众号。</p>
+<p>参考：<br><a href="https://docs.gradle.org/current/dsl/index.html" target="_blank" rel="noopener">官网</a><br><a href="https://www.jianshu.com/p/6dc2074480b8" target="_blank" rel="noopener">[Android Gradle] 搞定Groovy闭包这一篇就够了</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/15/从0到1完成一个健身App/路由框架之路/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/03/15/从0到1完成一个健身App/路由框架之路/" itemprop="url">Untitled</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-03-15T09:28:29+08:00">
+                2019-03-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="CrazyRouter"><a href="#CrazyRouter" class="headerlink" title="CrazyRouter"></a>CrazyRouter</h3><p>这个路由框架要达到的功能：<br>第一阶段：<br>1.单module的路由收集和分发能力，支持多个地址路由到一个页面<br>2.支持注入Bundle、Uri的参数并转换格式  3.15-3.17</p>
+<p>3.支持跨module路由收集  3.18 - 3.19</p>
+<p>4.支持打开Service和Broadcast</p>
+<p>调研两到三个路由库，看懂他们的原理，来确定我这个路由库的技术选型。<br>ActivityRouter</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/21/插件化学习笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/21/插件化学习笔记/" itemprop="url">Untitled</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-21T23:07:36+08:00">
+                2019-01-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="插件化"><a href="#插件化" class="headerlink" title="插件化"></a>插件化</h2><h3 id="简单的插件化"><a href="#简单的插件化" class="headerlink" title="简单的插件化"></a>简单的插件化</h3><p>代理方式分为静态代理和动态代理。静态代理就是使用代理模式，建造一些proxy对象来代替原对象处理相关的操作。动态代理是根据需要动态的生成，如java中的动态代理技术。</p>
+<p>假设我们要启动一个没有在AndroidManifest中声明的Activity，我们没有办法去hook住AMN的操作。只能在启动前和即将启动Activity的时候做文章。基本思路是：</p>
+<ul>
+<li>在第一步：发送要启动的Activity之前，先把这个Activity替换为一个在AndroidManifest中声明过的StubActivity。<strong>通过AMN.getDefault进行hook，可以同时适用于Activity和Context的startActivity。</strong>在替换以后，要把原来的Activity信息存放在Bundle中。但是这样为啥第二次启动的时候不会被check到？</li>
+<li>在第五步：AMS通知App启动StubActivity时，不用去启动StubActivity，而是把StubActivity中存放的原来的Activity给取出来打开。<strong>在这里，我们可以对H类的mCallback字段进行Hook，或者是对ActivityTrhead的mInstrumentation字段进行Hook。这里选择前者</strong>。这样，H类调用handleMessage去处理startActivity的方法的时候，就会被改成真实的Activity地址。</li>
+</ul>
+<h3 id="插件化基础知识"><a href="#插件化基础知识" class="headerlink" title="插件化基础知识"></a>插件化基础知识</h3><p>加载一个dex：<br>1.可以在MainActivity或者Application的attachBaseContext中进行初始化，这里是早到极致，比onCreate更早。<br>2.通过<strong>面向接口或者抽象编程</strong>，可以避免在项目中需要用到插件中的类的时候只能进行反射处理的问题。<br>3.Android Studio中有六种依赖，后期Compile被改成implement和api：</p>
+<ul>
+<li>Compile：compile是对所有的build type以及favlors都会参与编译并且打包到最终的apk文件中。</li>
+<li>Provided：Provided是对所有的build type以及favlors只在编译时使用，类似eclipse中的external-libs,只参与编译，不打包到最终apk。</li>
+<li>APK：只会打包到apk文件中，而不参与编译，所以不能再代码中直接调用jar中的类或方法，否则在编译时会报错</li>
+<li>Test compile：仅仅是针对单元测试代码的编译编译以及最终打包测试apk时有效，而对正常的debug或者release apk包不起作用</li>
+<li>Debug compile：Debug compile 仅仅针对debug模式的编译和最终的debug apk打包。</li>
+<li>Release compile：仅仅针对Release 模式的编译和最终的Release apk打包。</li>
+</ul>
+<p>典型的Binder模式,有利于后面的理解： 1、客户端通过某种方式得到服务器端的代理对象。从客户端角度看来代理对象和他的本地对象没有什么差别。它可以像其他本地对象一样调用其方法，访问其变量。 2、客户端通过调用服务器代理对象的方法向服务器端发送请求。 3、代理对象把用户请求通过Android内核（Linux内核）的Binder驱动发送到服务器进程。 4、服务器进程处理用户请求，并通过Android内核（Linux内核）的Binder驱动返回处理结果给客户端的服务器代理对象。 5、客户端收到服务器端的返回结果。</p>
+<p>4.想要实现插件化，主要是解决下面三个问题：<br>插件中代码的加载和与主工程的互相调用<br>插件中资源的加载和与主工程的互相访问<br>四大组件生命周期的管理</p>
+<h3 id="资源初探"><a href="#资源初探" class="headerlink" title="资源初探"></a>资源初探</h3><p>Resources类中的众多访问资源的方法，比如getColor，getText等方法，都是间接调用AssetManager的方法。AssetManager是最终的调用入口。AssetManager有一个addAssetPath方法，在App启动的时候，会当前Apk的路径传进去，这样就可以访问apk的资源了。所以我们可以通过反射的方式，把插件apk的路径传入这个方法，那么app的资源就都在一个资源池中了。</p>
+<p>当我们使用R中的id去调用资源时，是使用Apk打包时候<code>aapt</code>的resources.arsc哈希表文件来获取id和资源的对应关系。</p>
+<p><strong>所以当我们想要加载自己的dex中的资源时，需要自己生成一个AssetManager，基于这个AssetManager生成Resources，Theme，和Assets对象，并复写Activity的getAssets，getResources，getTheme方法</strong></p>
+<p>资源通过<code>aapt</code>打包，所以我们可以在aapt打包生成resources.arsc之后，对resources.arsc进行修改，或者直接修改aapt。</p>
+<h3 id="最简单的插件化解决方案"><a href="#最简单的插件化解决方案" class="headerlink" title="最简单的插件化解决方案"></a>最简单的插件化解决方案</h3><p>最简单的方案有：</p>
+<ul>
+<li>合并所有插件的dex，来解决插件的类的加载问题</li>
+<li>预习在宿主的AndroidManifest中声明插件中的四大组件。</li>
+<li>把插件中的资源也合并到宿主的资源中</li>
+</ul>
+<p>以上就是说通过把ClassLoader中的pathList中的dexElements替换为我们原有的和新的插件的dex的list。</p>
+<p>缺点是不够灵活，因为无法预声明插件中的四大组件。</p>
+<h3 id="Activity的插件化解决方案"><a href="#Activity的插件化解决方案" class="headerlink" title="Activity的插件化解决方案"></a>Activity的插件化解决方案</h3><p>加载插件中类的方案有三：</p>
+<ul>
+<li>基于动态替换：把插件apk对应的LoadedApk对象，直接放入缓存中，然后把LoadedApk对象的ClassLoader改为插件的ClassLoader。非常麻烦。</li>
+<li>合并多个dex。也就是把插件的dex放在ClassLoader的dexList的最前面</li>
+<li>修改App原生的ClassLoader</li>
+</ul>
+<p>Activity可以使用多个Activity来占位处理，如果有LaunchMode的问题，还需要为占位的Activity预定义LaunchMode</p>
+<h3 id="Service插件化解决方案"><a href="#Service插件化解决方案" class="headerlink" title="Service插件化解决方案"></a>Service插件化解决方案</h3><p>Service也需要占位。但是不像Activity。Service只能一对一占位。也就是说一个StubService只能对应一个插件中的Service。</p>
+<h3 id="ContentProvider插件化"><a href="#ContentProvider插件化" class="headerlink" title="ContentProvider插件化"></a>ContentProvider插件化</h3><p>ContentProvider在加载插件时安装插件Provider</p>
+<p>方案：</p>
+<ul>
+<li>把宿主App和插件App的dex合并到一起</li>
+<li>读取插件中的ContentProvider信息，借助PackageParser的parsePackage方法</li>
+</ul>
+<h3 id="Boradcast插件化"><a href="#Boradcast插件化" class="headerlink" title="Boradcast插件化"></a>Boradcast插件化</h3><p>静态广播以动态广播方式注册。</p>
+<h3 id="Binder机制"><a href="#Binder机制" class="headerlink" title="Binder机制"></a>Binder机制</h3><h3 id="ClassLoader"><a href="#ClassLoader" class="headerlink" title="ClassLoader"></a>ClassLoader</h3><p>ClassLoader:<br>PathClassLoader vs DexClassLoader区别是DexClassLoader可以加载任何路径的apk/dex/jar<br>PathClassLoader只能加载/data/app中的apk，也就是已经安装到手机中的apk。这个也是PathClassLoader作为默认的类加载器的原因，因为一般程序都是安装了，在打开，这时候PathClassLoader就去加载指定的apk(解压成dex，然后在优化成odex)就可以了。</p>
+<p>类加载包括了包括加载、验证、准备、解析和初始化五个阶段；对于开发者来说，可控性最强的是加载阶段；加载阶段主要完成三件事：</p>
+<ul>
+<li>根据一个类的全限定名来获取定义此类的二进制字节流</li>
+<li>将这个字节流所代表的静态存储结构转化为JVM方法区中的运行时数据结构</li>
+<li>在内存中生成一个代表这个类的java.lang.Class对象，作为方法区这个类的各种数据的访问入口。</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/04/C++自学笔记/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -648,163 +1348,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/30/Java知识深入/你所不知道的Method Handles/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="oubindo">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Coding and Learning">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/30/Java知识深入/你所不知道的Method Handles/" itemprop="url">你所不知道的Method Handles</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-30T10:15:00+08:00">
-                2018-09-30
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/android/" itemprop="url" rel="index">
-                    <span itemprop="name">android</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="Method-Handles"><a href="#Method-Handles" class="headerlink" title="Method Handles"></a>Method Handles</h2><p>Method Hanldes是在Java 7引入的概念。全限定名是java.lang.invoke.MethodHandles。在这篇文章中，我们将学会如何创建，使用MethodHandles及它的原理。</p>
-<h3 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1.介绍"></a>1.介绍</h3><p>Method Handles的引入是为了与已经存在的java.lang.reflect API相配合。他们分别是为了解决不同的问题而出现的。从性能角度上说，MethodHandle api要比反射快很多因为访问检查在创建的时候就已经完成了，而不是像反射一样等到运行时候才检查。但同时，Method Handles比反射更难用，因为没有列举类中成员，获取属性访问标志之类的机制。<br>另外，MethodHandles可以操作方法，更改方法参数的类型和他们的顺序。而反射则没有这些功能。<br>从以上角度看，反射更通用，但是安全性更差，因为可以在不授权的情况下使用反射对象。而method Handles遵从了分享者的能力。所以method handle是一种更低级的发现，适配和调用方法的方式，唯一的优点就是更快。所以反射更适合主流Java开发者，而method handle更适用于对编译和运行性能有要求的人。</p>
-<h3 id="2-使用"><a href="#2-使用" class="headerlink" title="2.使用"></a>2.使用</h3><p>1.要使用method handle，首先需要得到Lookup。这是创造方法，构造函数，属性的method handles的工厂类。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// public方法的Lookup</span></span><br><span class="line">MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();</span><br><span class="line"><span class="comment">// 所有方法的Lookup</span></span><br><span class="line">MethodHandles.Lookup lookup = MethodHandles.lookup();</span><br></pre></td></tr></table></figure></p>
-<p>2.要创建MethodHandle，lookup需要一个定义了它的类型的MethodType对象。这里的类型包括了传入参数的类型，和最后返回的类型，要一一对应。第一个是返回类型，如果没有返回值就是Void.class, 后面是可变的传入参数的类型。</p>
-<blockquote>
-<p> a MethodType represents the arguments and return type accepted and returned by a method handle or passed and expected by a method handle caller.</p>
-</blockquote>
-<p>例如<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 接收数组，返回一个List对象</span></span><br><span class="line">MethodType mt = MethodType.methodType(List.class, Object[].class);</span><br></pre></td></tr></table></figure></p>
-<p>3.查找MethodHandle<br>Lookup之所以叫Lookup自然是因为他们有查找MethodHandle的能力。先看看他的方法。<br><img src="http://ovkwd4vse.bkt.clouddn.com/屏幕快照 2018-10-19 上午10.19.20.png" alt="屏幕快照 2018-10-19 上午10.19.20.png"></p>
-<p>4.接下来就可以进行查找并调用了<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MethodType mt = MethodType.methodType(String.class, <span class="keyword">char</span>.class, <span class="keyword">char</span>.class);</span><br><span class="line">MethodHandle replaceMH = publicLookup.findVirtual(String.class, <span class="string">"replace"</span>, mt);</span><br><span class="line"> </span><br><span class="line">String output = (String) replaceMH.invoke(<span class="string">"jovo"</span>, Character.valueOf(<span class="string">'o'</span>), <span class="string">'a'</span>);</span><br></pre></td></tr></table></figure></p>
-<p>5.方法调用细则：<br>有三种方法可以调用方法invoke(), invokeWithArugments()和invokeExact()，当我们使用invoke时，我们必须固定arguments的数目。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// invoke使用</span></span><br><span class="line">MethodType mt = MethodType.methodType(String.class, <span class="keyword">char</span>.class, <span class="keyword">char</span>.class);</span><br><span class="line">MethodHandle replaceMH = publicLookup.findVirtual(String.class, <span class="string">"replace"</span>, mt);</span><br><span class="line">String output = (String) replaceMH.invoke(<span class="string">"jovo"</span>, Character.valueOf(<span class="string">'o'</span>), <span class="string">'a'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// invokeWithArguments使用</span></span><br><span class="line">MethodType mt = MethodType.methodType(List.class, Object[].class);</span><br><span class="line">MethodHandle asList = publicLookup.findStatic(Arrays.class, <span class="string">"asList"</span>, mt);</span><br><span class="line">List&lt;Integer&gt; list = (List&lt;Integer&gt;) asList.invokeWithArguments(<span class="number">1</span>,<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// invokeExact</span></span><br><span class="line">MethodType mt = MethodType.methodType(<span class="keyword">int</span>.class, <span class="keyword">int</span>.class, <span class="keyword">int</span>.class);</span><br><span class="line">MethodHandle sumMH = lookup.findStatic(Integer.class, <span class="string">"sum"</span>, mt);</span><br><span class="line"><span class="keyword">int</span> sum = (<span class="keyword">int</span>) sumMH.invokeExact(<span class="number">1</span>, <span class="number">11</span>);</span><br></pre></td></tr></table></figure></p>
-<p>具体的区别是：</p>
-<blockquote>
-<p>与invokeExact方法不同，invoke方法允许更加松散的调用方式。它会尝试在调用的时候进行返回值和参数类型的转换工作。这是通过MethodHandle类的asType方法来完成的，asType方法的作用是把当前方法句柄适配到新的MethodType上面，并产生一个新的方法句柄。当方法句柄在调用时的类型与其声明的类型完全一致的时候，调用invoke方法等于调用invokeExact方法；否则，invoke方法会先调用asType方法来尝试适配到调用时的类型。如果适配成功，则可以继续调用。否则会抛出相关的异常。这种灵活的适配机制，使invoke方法成为在绝大多数情况下都应该使用的方法句柄调用方式。</p>
-</blockquote>
-<p>参考：<br><a href="https://www.baeldung.com/java-method-handles" target="_blank" rel="noopener">https://www.baeldung.com/java-method-handles</a><br><a href="https://www.cnblogs.com/night-wind/p/4405564.html" target="_blank" rel="noopener">https://www.cnblogs.com/night-wind/p/4405564.html</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/30/书海拾贝/自控力/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -928,6 +1471,163 @@
 <blockquote>
 <p>这个点也很新颖。但是也确实是这样的。</p>
 </blockquote>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/30/Java知识深入/你所不知道的Method Handles/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="oubindo">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Coding and Learning">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/30/Java知识深入/你所不知道的Method Handles/" itemprop="url">你所不知道的Method Handles</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-30T10:15:00+08:00">
+                2018-09-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/android/" itemprop="url" rel="index">
+                    <span itemprop="name">android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Method-Handles"><a href="#Method-Handles" class="headerlink" title="Method Handles"></a>Method Handles</h2><p>Method Hanldes是在Java 7引入的概念。全限定名是java.lang.invoke.MethodHandles。在这篇文章中，我们将学会如何创建，使用MethodHandles及它的原理。</p>
+<h3 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1.介绍"></a>1.介绍</h3><p>Method Handles的引入是为了与已经存在的java.lang.reflect API相配合。他们分别是为了解决不同的问题而出现的。从性能角度上说，MethodHandle api要比反射快很多因为访问检查在创建的时候就已经完成了，而不是像反射一样等到运行时候才检查。但同时，Method Handles比反射更难用，因为没有列举类中成员，获取属性访问标志之类的机制。<br>另外，MethodHandles可以操作方法，更改方法参数的类型和他们的顺序。而反射则没有这些功能。<br>从以上角度看，反射更通用，但是安全性更差，因为可以在不授权的情况下使用反射对象。而method Handles遵从了分享者的能力。所以method handle是一种更低级的发现，适配和调用方法的方式，唯一的优点就是更快。所以反射更适合主流Java开发者，而method handle更适用于对编译和运行性能有要求的人。</p>
+<h3 id="2-使用"><a href="#2-使用" class="headerlink" title="2.使用"></a>2.使用</h3><p>1.要使用method handle，首先需要得到Lookup。这是创造方法，构造函数，属性的method handles的工厂类。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// public方法的Lookup</span></span><br><span class="line">MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();</span><br><span class="line"><span class="comment">// 所有方法的Lookup</span></span><br><span class="line">MethodHandles.Lookup lookup = MethodHandles.lookup();</span><br></pre></td></tr></table></figure></p>
+<p>2.要创建MethodHandle，lookup需要一个定义了它的类型的MethodType对象。这里的类型包括了传入参数的类型，和最后返回的类型，要一一对应。第一个是返回类型，如果没有返回值就是Void.class, 后面是可变的传入参数的类型。</p>
+<blockquote>
+<p> a MethodType represents the arguments and return type accepted and returned by a method handle or passed and expected by a method handle caller.</p>
+</blockquote>
+<p>例如<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 接收数组，返回一个List对象</span></span><br><span class="line">MethodType mt = MethodType.methodType(List.class, Object[].class);</span><br></pre></td></tr></table></figure></p>
+<p>3.查找MethodHandle<br>Lookup之所以叫Lookup自然是因为他们有查找MethodHandle的能力。先看看他的方法。<br><img src="http://ovkwd4vse.bkt.clouddn.com/屏幕快照 2018-10-19 上午10.19.20.png" alt="屏幕快照 2018-10-19 上午10.19.20.png"></p>
+<p>4.接下来就可以进行查找并调用了<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MethodType mt = MethodType.methodType(String.class, <span class="keyword">char</span>.class, <span class="keyword">char</span>.class);</span><br><span class="line">MethodHandle replaceMH = publicLookup.findVirtual(String.class, <span class="string">"replace"</span>, mt);</span><br><span class="line"> </span><br><span class="line">String output = (String) replaceMH.invoke(<span class="string">"jovo"</span>, Character.valueOf(<span class="string">'o'</span>), <span class="string">'a'</span>);</span><br></pre></td></tr></table></figure></p>
+<p>5.方法调用细则：<br>有三种方法可以调用方法invoke(), invokeWithArugments()和invokeExact()，当我们使用invoke时，我们必须固定arguments的数目。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// invoke使用</span></span><br><span class="line">MethodType mt = MethodType.methodType(String.class, <span class="keyword">char</span>.class, <span class="keyword">char</span>.class);</span><br><span class="line">MethodHandle replaceMH = publicLookup.findVirtual(String.class, <span class="string">"replace"</span>, mt);</span><br><span class="line">String output = (String) replaceMH.invoke(<span class="string">"jovo"</span>, Character.valueOf(<span class="string">'o'</span>), <span class="string">'a'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// invokeWithArguments使用</span></span><br><span class="line">MethodType mt = MethodType.methodType(List.class, Object[].class);</span><br><span class="line">MethodHandle asList = publicLookup.findStatic(Arrays.class, <span class="string">"asList"</span>, mt);</span><br><span class="line">List&lt;Integer&gt; list = (List&lt;Integer&gt;) asList.invokeWithArguments(<span class="number">1</span>,<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// invokeExact</span></span><br><span class="line">MethodType mt = MethodType.methodType(<span class="keyword">int</span>.class, <span class="keyword">int</span>.class, <span class="keyword">int</span>.class);</span><br><span class="line">MethodHandle sumMH = lookup.findStatic(Integer.class, <span class="string">"sum"</span>, mt);</span><br><span class="line"><span class="keyword">int</span> sum = (<span class="keyword">int</span>) sumMH.invokeExact(<span class="number">1</span>, <span class="number">11</span>);</span><br></pre></td></tr></table></figure></p>
+<p>具体的区别是：</p>
+<blockquote>
+<p>与invokeExact方法不同，invoke方法允许更加松散的调用方式。它会尝试在调用的时候进行返回值和参数类型的转换工作。这是通过MethodHandle类的asType方法来完成的，asType方法的作用是把当前方法句柄适配到新的MethodType上面，并产生一个新的方法句柄。当方法句柄在调用时的类型与其声明的类型完全一致的时候，调用invoke方法等于调用invokeExact方法；否则，invoke方法会先调用asType方法来尝试适配到调用时的类型。如果适配成功，则可以继续调用。否则会抛出相关的异常。这种灵活的适配机制，使invoke方法成为在绝大多数情况下都应该使用的方法句柄调用方式。</p>
+</blockquote>
+<p>参考：<br><a href="https://www.baeldung.com/java-method-handles" target="_blank" rel="noopener">https://www.baeldung.com/java-method-handles</a><br><a href="https://www.cnblogs.com/night-wind/p/4405564.html" target="_blank" rel="noopener">https://www.cnblogs.com/night-wind/p/4405564.html</a></p>
 
           
         
@@ -1307,600 +2007,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/09/我的gradle学习之路/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="oubindo">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Coding and Learning">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/09/我的gradle学习之路/" itemprop="url">gradle学习</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-09T17:08:29+08:00">
-                2018-08-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="gradle学习之路"><a href="#gradle学习之路" class="headerlink" title="gradle学习之路"></a>gradle学习之路</h2><p>1.gradle init生成gradle需要的文件。</p>
-<p>2.gradle task –scan 可以生成报表，方便我们查看和分析什么耗时</p>
-<p>3.build.gradle 里面写的是项目多模块可以同时使用的配置。当我们在这里加上<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        jcenter() </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>的时候，配置就对全局有效。也可以改成subprojects。而且这两个配置可以在根项目里使用很多次。</p>
-<p>4.生成library： gradle init –type groovy-library/java-library/java-application</p>
-<p>5.多个模块的通用设置放在根目录的build.gradle下面。可以用configure语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">configure(subprojects.findAll &#123; it.name == &apos;greeter&apos; || it.name == &apos;greeting-library&apos; &#125;) &#123; </span><br><span class="line"></span><br><span class="line">    apply plugin: &apos;groovy&apos;</span><br><span class="line"></span><br><span class="line">    dependencies &#123;</span><br><span class="line">        testCompile &apos;org.spockframework:spock-core:1.0-groovy-2.4&apos;, &#123;</span><br><span class="line">            exclude module: &apos;groovy-all&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>6.只在根目录，进行其他subproject的编译<br>./gradlew :{subproject}/{task}</p>
-<p>7.在Java library中进行build，可以在build/libs目录下找到jar。或者也可以使用./gradlew jar命令打jar包</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/10/美国大学Online课程推荐及个人评测/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="oubindo">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Coding and Learning">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/10/美国大学Online课程推荐及个人评测/" itemprop="url">美国大学Online课程及个人评测</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-10T13:28:32+08:00">
-                2018-05-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="美国大学Online课程及个人评测"><a href="#美国大学Online课程及个人评测" class="headerlink" title="美国大学Online课程及个人评测"></a>美国大学Online课程及个人评测</h1><h2 id="已刷"><a href="#已刷" class="headerlink" title="已刷"></a>已刷</h2><p>1.Coursera MachineLearning：非常不错的机器学习入门课程，讲解细致，测验和program exercise都是很有效的补充学习资料。</p>
-<p>2.Stanford MachineLearning：也是Ng的课程，但是这课程相对上门更难一点，有大量的数学证明，对于想要知根知底的学生来说是一个不错的补充学习资料。我只看了前10个讲座，后面的没看了。</p>
-<h2 id="待刷"><a href="#待刷" class="headerlink" title="待刷"></a>待刷</h2><p>1.Coursera Algorithm II：</p>
-<p>2.Coursera DeepLearning：</p>
-<p>3.<a href="https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-042j-mathematics-for-computer-science-fall-2010/index.htm" target="_blank" rel="noopener">MIT math for computer sciense</a> 这门课大多是离散数学的东西，可以等有空的时候再看，优先级低一些。</p>
-<h2 id="外国公开课程地址"><a href="#外国公开课程地址" class="headerlink" title="外国公开课程地址"></a>外国公开课程地址</h2><p>1.<a href="https://ocw.mit.edu/courses/" target="_blank" rel="noopener">MIT open courses</a></p>
-<p>2.<a href="https://www.cs.washington.edu/education/courses" target="_blank" rel="noopener">华盛顿大学 open courses </a><br>部分课程有视频在youtube上，很多的课程，几乎涵盖了所有课题。可以作为我以后刷课的主力。</p>
-<p>3.直接搜课程英文名，然后看别人的推荐</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/10/kotlin深入学习系列(二)：类与对象篇/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="oubindo">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Coding and Learning">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/04/10/kotlin深入学习系列(二)：类与对象篇/" itemprop="url">Kotlin深入学习系列(二):OOP篇</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-10T13:38:32+08:00">
-                2018-04-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Kotlin/" itemprop="url" rel="index">
-                    <span itemprop="name">Kotlin</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="类与对象"><a href="#类与对象" class="headerlink" title="类与对象"></a>类与对象</h1><h2 id="一-类"><a href="#一-类" class="headerlink" title="一.类"></a>一.类</h2><h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><p>在 Kotlin 中的一个类可以有一个主构造函数和一个或多个次构造函数。主构造函数是类头的一部分：它跟在类名（和可选的类型参数）后。其中由于主构造函数内不能写代码，主要的初始化代码需要在 init{} 中书写。在实例初始化期间，初始化块按照它们出现在类体中的顺序执行，与属性初始化器交织在一起。也就是说这里的<strong>初始化块init其实就是被当成了属性初始化</strong>。主构造函数中的参数默认为类参数使用。</p>
-<p>次构造函数可以通过constructor(param)来定义，<strong>所有的构造函数都必须委托给主构造函数，可以直接委托或者通过别的次构造函数简洁委托。</strong> 委托方法是在constructor后面加个this()。</p>
-<p>但是这里又有一个坑，次构造函数不能使用val或者var！例子如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">class Pair&lt;K, V&gt;(val first: K, val second: V) &#123;</span><br><span class="line"></span><br><span class="line">    init&#123;</span><br><span class="line">        println(<span class="string">"init"</span>)</span><br><span class="line">        println(first)</span><br><span class="line">        println(second)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    constructor(val first: K): <span class="keyword">this</span>(first, <span class="number">0</span>)&#123;    <span class="comment">// 这里的val报错。</span></span><br><span class="line">        println(<span class="string">"constructor"</span>)</span><br><span class="line">        println(first)</span><br><span class="line">        println(second)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="继承"><a href="#继承" class="headerlink" title="继承"></a>继承</h3><p>Kotlin所有类都有一个超类Any。声明类时如果使用了open来修饰，那就可以被继承，否则默认不允许继承。</p>
-<p>继承的时候如果子类有主构造函数，那么必须用父类的主构造函数参数初始化。否则必须有次构造函数调用super来调用父类的构造函数。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class HeritLearning: ClassLearning&#123;</span><br><span class="line">    constructor(name: String) : <span class="keyword">super</span>(name)&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或者</span></span><br><span class="line">class HeritLearning(name: String) : ClassLearning(name)&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>如果一个方法同时和多个超类的相同，那就在调用父类方法的时候使用super&lt;父类&gt;.func()来区分父类。</p>
-<h3 id="覆盖属性或方法"><a href="#覆盖属性或方法" class="headerlink" title="覆盖属性或方法"></a>覆盖属性或方法</h3><p>开放覆盖的属性和方法必须用open修饰，覆盖的必须用override修饰。覆盖属性的时候var可以覆盖val，反之则不行。</p>
-<h3 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h3><p>接口默认为open，不需要主构造函数。</p>
-<h2 id="二-字段"><a href="#二-字段" class="headerlink" title="二.字段"></a>二.字段</h2><p>字段的完整语法：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var &lt;propertyName&gt;[: &lt;PropertyType&gt;] [= &lt;property_initializer&gt;]</span><br><span class="line">    [&lt;getter&gt;]</span><br><span class="line">    [&lt;setter&gt;]</span><br></pre></td></tr></table></figure></p>
-<p>也就是是说，当我们没有声明getter和setter时默认就已经有这些东西了。当我们声明以后可以得到自定义的实现。如果想屏蔽getter或者setter，可以使用private set。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var setterVisibility: String = <span class="string">"abc"</span></span><br><span class="line">    <span class="keyword">private</span> set <span class="comment">// 此 setter 是私有的并且有默认实现</span></span><br></pre></td></tr></table></figure></p>
-<p>在访问器里面，我们可以使用field来代替此字段<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">var counter = <span class="number">0</span> <span class="comment">// 注意：这个初始器直接为幕后字段赋值</span></span><br><span class="line">    set(value) &#123;</span><br><span class="line">        <span class="keyword">if</span> (value &gt;= <span class="number">0</span>) field = value</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="lateinit"><a href="#lateinit" class="headerlink" title="lateinit"></a>lateinit</h3><p>属性初始化要点如下：</p>
-<ul>
-<li>当我们在类外面声明属性为可空或非空时，都必须进行初始化</li>
-<li>声明为lateinit的对象必须是可空对象，非空对象不行。</li>
-<li>使用.isInitialized来判断属性是否被初始化了。</li>
-</ul>
-<p><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180410161250423.png" alt=""></p>
-<h2 id="三-扩展"><a href="#三-扩展" class="headerlink" title="三.扩展"></a>三.扩展</h2><p>所有扩展的定义域都在包里，使用之外的扩展就需要导入。</p>
-<p>1.扩展函数<br>kotlin可以通过扩展来扩展类的新功能而无需继承或装饰。原理就是：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">fun ClassLearning.f(str: String)&#123;</span><br><span class="line">    <span class="keyword">this</span>.arr[<span class="number">3</span>] = <span class="number">0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">open class <span class="title">ClassLearning</span><span class="params">(val name: String, val age: Int)</span></span>&#123;</span><br><span class="line">    var arr = Array&lt;Int&gt;(<span class="number">5</span>, &#123;<span class="number">1</span>;<span class="number">2</span>;<span class="number">4</span>;<span class="number">2</span>;<span class="number">1</span>&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>反编译之后如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">ClassLearningKt</span> </span>&#123;</span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(@NotNull ClassLearning $receiver, @NotNull String str)</span> </span>&#123;</span><br><span class="line">      Intrinsics.checkParameterIsNotNull($receiver, <span class="string">"$receiver"</span>);</span><br><span class="line">      Intrinsics.checkParameterIsNotNull(str, <span class="string">"str"</span>);</span><br><span class="line">      $receiver.getArr()[<span class="number">3</span>] = <span class="number">0</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(@NotNull String[] args)</span> </span>&#123;</span><br><span class="line">      Intrinsics.checkParameterIsNotNull(args, <span class="string">"args"</span>);</span><br><span class="line">      ClassLearning l = <span class="keyword">new</span> ClassLearning(<span class="string">"oubin"</span>);</span><br><span class="line">      f(l, <span class="string">"f方法"</span>);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>可以看到被扩展的对象被打包成了receiver，然后就是这个对象直接操作他自身的元素了。也就是说，扩展对象并没有改变他们所扩展的类，而是通过生成另外一个方法来操作。所以我们可以发现，这个方法绝对是编译器生成的，所以对于运行期重载的情况怕是用不了了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">open class C</span><br><span class="line"></span><br><span class="line">class D: C()</span><br><span class="line"></span><br><span class="line">fun C.foo() = &quot;c&quot;</span><br><span class="line"></span><br><span class="line">fun D.foo() = &quot;d&quot;</span><br><span class="line"></span><br><span class="line">fun printFoo(c: C) &#123;</span><br><span class="line">    println(c.foo())</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">printFoo(D())  // 会print c</span><br></pre></td></tr></table></figure></p>
-<p>2.扩展属性<br>扩展属性不能有初始化器，他们的行为只能由显式的getter和setter定义。扩展属性也是在新类中生成了一个get方法，然后将扩展属性的get()返回的值进行返回。</p>
-<p>3.伴生对象扩展：同样伴生对象也可以定义扩展函数和属性。</p>
-<h2 id="四-数据类"><a href="#四-数据类" class="headerlink" title="四.数据类"></a>四.数据类</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">data class Person(val name: String)&#123;</span><br><span class="line">    var age: Int = 0</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fun Person.copy(name:String = this.name) = Person(name)</span><br></pre></td></tr></table></figure>
-<p>数据类可以将部分属性放入括号内，从而排除这些属性。进行copy的时候可以如上定义，然后Person对象可以直接调用copy函数</p>
-<p>数据类的解构声明：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">val jane = User(&quot;Jane&quot;, 35)</span><br><span class="line">val (name, age) = jane</span><br><span class="line">println(&quot;$name, $age years of age&quot;)</span><br></pre></td></tr></table></figure></p>
-<p>他是使用了利用了componentN()函数。<br><img src="http://ovkwd4vse.bkt.clouddn.com/markdown-img-paste-20180410170358854.png" alt=""></p>
-<h2 id="五-嵌套类"><a href="#五-嵌套类" class="headerlink" title="五.嵌套类"></a>五.嵌套类</h2><p>内部类通过标记为inner可以访问外部类的成员，因为会带有一个对外部类的对象的引用。</p>
-<p>匿名内部类可以使用对象表达式来实现。</p>
-<h2 id="六-对象"><a href="#六-对象" class="headerlink" title="六.对象"></a>六.对象</h2><p>1.对象表达式: 样式为 object: X(){…}<br>当我们不需要任何超类型时，就写做 val a = object{ val x = 3}, 这样我们就可以访问a.x<br>它的实现原理是通过new Object()去生成了这样一个对象并定义相关属性。</p>
-<p>对象表达式可以访问外部的属性，并且比java匿名内部类更牛的是它不限制是final对象。</p>
-<p>2.伴生对象<br>当我们在类中定义伴生对象时发生了什么：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">class HeritLearning(name: String) : ClassLearning(name)&#123;</span><br><span class="line">    companion object &#123;</span><br><span class="line">        val x: String = <span class="string">"ds"</span></span><br><span class="line"></span><br><span class="line">        <span class="function">fun <span class="title">get</span><span class="params">()</span></span>&#123;</span><br><span class="line">            println()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 反编译后为</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Companion</span> </span>&#123;</span><br><span class="line">      <span class="meta">@NotNull</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> String <span class="title">getX</span><span class="params">()</span> </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> HeritLearning.x;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">get</span><span class="params">()</span> </span>&#123;</span><br><span class="line">         System.out.println();</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">private</span> <span class="title">Companion</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// $FF: synthetic method</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="title">Companion</span><span class="params">(DefaultConstructorMarker $constructor_marker)</span> </span>&#123;</span><br><span class="line">         <span class="keyword">this</span>();</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
-<p>可以看到我们的companion被编译成了一个静态内部类，属性被定义为外部类的静态属性，而方法确是这个静态内部类的方法。由此，我们知道伴生方法是访问不了非伴生属性的。</p>
-<h2 id="七-委托"><a href="#七-委托" class="headerlink" title="七.委托"></a>七.委托</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Base</span> </span>&#123;</span><br><span class="line">    <span class="function">fun <span class="title">print</span><span class="params">()</span></span></span><br><span class="line"><span class="function">&#125;</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">class <span class="title">BaseImpl</span><span class="params">(val x: Int)</span> : Base </span>&#123;</span><br><span class="line">    <span class="function">override fun <span class="title">print</span><span class="params">()</span> </span>&#123; print(x) &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class Derived(b: Base) : Base by b</span><br><span class="line"></span><br><span class="line"><span class="function">fun <span class="title">main</span><span class="params">(args: Array&lt;String&gt;)</span> </span>&#123;</span><br><span class="line">    val b = BaseImpl(<span class="number">10</span>)</span><br><span class="line">    Derived(b).print() <span class="comment">// 输出 10</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/08/Kotlin深入学习系列(一)：基础篇/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="oubindo">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Coding and Learning">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/04/08/Kotlin深入学习系列(一)：基础篇/" itemprop="url">Kotlin深入学习系列(一):基础篇</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-08T20:08:01+08:00">
-                2018-04-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Kotlin/" itemprop="url" rel="index">
-                    <span itemprop="name">Kotlin</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="基础篇"><a href="#基础篇" class="headerlink" title="基础篇"></a>基础篇</h1><h2 id="基本类型"><a href="#基本类型" class="headerlink" title="基本类型"></a>基本类型</h2><p>1.数字<br>数字与java中基本相同，主要是下面几点不同：</p>
-<ul>
-<li>kotlin对于数字没有隐式扩展转换(如从int转为long)</li>
-<li>在kotlin中字符不是数字</li>
-</ul>
-<p>2.表示方式<br>kotlin会把数字存储为jvm的原生类型，但是只有在<strong>需要可空引用或泛型时</strong>数字会被装箱。<br>但是这里存在着一个坑：当取值在[-128, 127]之间时不会被装箱，而在这之外的int数字才会被装箱，如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">val b:Int = 5    // 被编译为 short b = 5;</span><br><span class="line">val b1:Int? = b  // 被编译为 Integer i = Integer.valueOf(5)</span><br><span class="line">val b11:Int? = b  </span><br><span class="line">println(b1 === b11) // 注意这里打印的是 &apos;true&apos;  </span><br><span class="line"></span><br><span class="line">val a: Int = 10000  </span><br><span class="line">val a1: Int? = a  </span><br><span class="line">val a11: Int? = a  </span><br><span class="line">println (a1 === a11 ) //注意这里打印的是 &apos;false&apos;</span><br></pre></td></tr></table></figure></p>
-<p>这是因为JVM把[-128,127]的所有int数字的装箱全部缓存了，任何指向这个范围的对象，都不可能被另外”创建”，应该是为了缓存最常用的数字以节省性能吧。</p>
-<p>3.在kotlin中万物皆对象，=== 是比较对象之间的地址是否相等， == 是比较对象的大小是否相等。</p>
-<p>4.数据类型转换：需要使用toByte(),toInt之类的转换。</p>
-<p>5.浮点数比较有些很棒的特性：</p>
-<ul>
-<li>区间实例以及区间检测：a..b、 x in a..b、 x !in a..b。 这里可以使用两个点来表示，甚至比python更方便。</li>
-<li>NaN与其自身相等，而且比任何其他元素都大</li>
-</ul>
-<p>6.字符Char不能直接当做数字，用单引号，与java一样。并且当需要可空引用时也会被装箱。</p>
-<p>7.数组：数组直接用Array<t>表示<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 一.已知所有元素</span></span><br><span class="line">val a = arrayOf(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>) <span class="comment">// array[1,2,3]</span></span><br><span class="line">val b = Array(<span class="number">5</span>, &#123; i -&gt; (i * i).toString() &#125;)  <span class="comment">// 数组大小和一个Array构造函数</span></span><br><span class="line"><span class="comment">// 二.空数组</span></span><br><span class="line">val c = emptyArray()/ arrayOfNulls&lt;String&gt;(<span class="number">0</span>)  <span class="comment">// 创建一个长度为0的null数组</span></span><br><span class="line"><span class="comment">// 三.基本类型</span></span><br><span class="line">val d = intArrayOf(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>)  <span class="comment">// 对于基本类型数组有特殊优化，但是得到的IntArray并不是Array的子类。</span></span><br><span class="line"><span class="comment">// 四.创建一个已知数量的数组</span></span><br><span class="line">val a = arrayOfNulls&lt;String&gt;(<span class="number">5</span>)</span><br></pre></td></tr></table></figure></t></p>
-<p>kotlin中数组是invariant的，不能把Array<string>赋值给Array<any>,但是可以是Array<out any=""></out></any></string></p>
-<p>8.字符串模板<br>字符串可以包含模板表达式 ，即一些小段代码，会求值并把结果合并到字符串中。模板表达式以美元符（$）开头，由一个简单的名字构成。如果要直接输出$符，只要不加变量即可:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">val s = <span class="string">"abc"</span></span><br><span class="line">println(<span class="string">"$s.length is $&#123;s.length&#125;"</span>) <span class="comment">// 输出“abc.length is 3”</span></span><br><span class="line">print(<span class="string">"$8.8"</span>)</span><br></pre></td></tr></table></figure></p>
-<h2 id="控制流"><a href="#控制流" class="headerlink" title="控制流"></a>控制流</h2><p>1.if语句表达三元运算符：val max = if (a &gt; b) a else b。与python中的表达十分相似：max = a if a &gt; b else b</p>
-<p>2.When表达式<br>when是一个加强的switch语句，可以作为语句也可以作为表达式。可以替代if else if链<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fun hasPrefix(x: Any) = when(x) &#123;</span><br><span class="line">    1,2 -&gt; true</span><br><span class="line">    is String -&gt; x.startsWith(&quot;prefix&quot;)</span><br><span class="line">    else -&gt; false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>3.for可以循环任何提供了迭代器的对象。</p>
-<p>4.Kotlin中任何表达式都可以用标签(label)来标记。标签的格式为标识符后跟@符号<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">loop@ for (i in 1..100) &#123;</span><br><span class="line">    for (j in 1..100) &#123;</span><br><span class="line">        if (……) break@loop</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>例子中的break可以直接跳出两重循环。同样的return,continue都可以使用这种操作。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1951,7 +2057,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1973,7 +2079,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">tags</span>
                 
               </div>
